@@ -1,0 +1,5 @@
+#!/bin/bash
+
+[[ -z $1 ]] && dir_name=$(dmenu -p "search directory...") || dir_name=$1
+dir_path=$(find / -type d -iname ${dir_name} 2>/dev/null | fzf --height=20%)
+[[ ! -z $dir_path ]] && cd $dir_path || exit 1

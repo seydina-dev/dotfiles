@@ -1,0 +1,4 @@
+#!/bin/sh 
+
+[ "$1" ]   && dev=$1 || dev=$(lsblk -l |sed -n '1,5!p'| dmenu -l 10 |cut -d' ' -f1)
+[ "$dev" ] && umount /dev/$dev && notify-send "$dev unmounted successfully" || exit 0

@@ -1,0 +1,17 @@
+#!/bin/bash
+
+#-Helper to mount android phones, works with dmenu
+
+mounting(){
+	simple-mtpfs -o default_permissions --device "$dev" $mount_point/ &&
+	notify-send "Device mounted on $mount_point"
+}
+
+mount_point="$HOME/phone"
+dev=$(simple-mtpfs -l | fzf )
+dev=${dev:0:1}
+
+
+[ -z "$dev" ] &&  (echo "no device to mount" exit 1)  ||
+[ "$(ls $mount_point) ] && umountphone && mounting ||
+mountng 

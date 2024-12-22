@@ -1,0 +1,13 @@
+#! /bin/sh
+
+wallpaper=$(find ~/wallpapers -type f |shuf -n 1)
+wal -i "$wallpaper" >/dev/null 
+nitrogen --set-auto "$wallpaper" 
+
+printf "%s\n" "Recompilling dwm..."
+[[ $(cat ~/.cache/wal/colors-wal-dwm.h |wc -l) == 18 ]] && sed -i '17d' ~/.cache/wal/colors-wal-dwm.h 
+cd ~/.config/dwm && sudo make clean install >/dev/null
+
+printf "%s\n" "Recompilling dmenu..."
+(cd ~/.config/dmenu && smci)
+

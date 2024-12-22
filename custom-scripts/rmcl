@@ -1,0 +1,4 @@
+#! /bin/sh
+
+[[ $(cat ~/.cache/wal/colors-wal-dwm.h |wc -l) == 18 ]] && (sed -i '17d' $HOME/.cache/wal/colors-wal-dwm.h)
+

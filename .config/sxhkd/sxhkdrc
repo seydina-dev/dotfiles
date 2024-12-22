@@ -1,0 +1,30 @@
+super + F1
+	"/bin/sh" -c notify-send "$(mdisk)"
+
+super + F2
+	"/bin/sh" -c mphone
+
+super + F3
+	"/bin/sh" -c udisk
+
+super + F4
+	"/bin/sh" -c uphone
+
+super + F5 
+	brillo -q -A 5
+
+super + F6
+	brillo -q -U 5
+
+super + b
+	"/bin/sh" -c smci
+
+super + r
+	pkill sxhkd && sxhkd &
+
+super + Up
+	pulsemixer --change-volume +5
+
+super + Down
+	pulsemixer --change-volume -5
+

@@ -1,0 +1,5 @@
+#! /bin/sh
+
+for d in "$(find -type d | fzf -m)"; do printf "%s " "$d" >> nodes; done &&
+cat nodes | xargs rm -rf && rm -rf nodes
+

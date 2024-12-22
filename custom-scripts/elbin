@@ -1,0 +1,24 @@
+#! /bin/sh
+
+CONFIG="$HOME/.config/hypr/wofi/config"
+STYLE="$HOME/.config/hypr/wofi/style.css"
+COLORS="$HOME/.config/hypr/wofi/colors"
+SCRIPTSDIR="$HOME/.local/bin"
+
+# wofi window config (in %)
+WIDTH=20
+HEIGHT=60
+
+## Wofi Command
+wofi_command="wofi --show dmenu \
+			--prompt scripts...
+			--conf $CONFIG --style $STYLE --color $COLORS \
+			--width=$WIDTH% --height=$HEIGHT% \
+			--cache-file=/dev/null \
+			--hide-scroll --no-actions \
+			--matching=fuzzy"
+
+
+[[ ! $(pidof wofi) ]] && script=$(find $SCRIPTSDIR -maxdepth 1 -type f | ${wofi_command} 2>/dev/null) || pkill wofi
+
+[[ $script ]] && kitty -e micro $script || pkill wofi

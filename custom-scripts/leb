@@ -1,0 +1,17 @@
+#! /bin/sh
+
+d="$(printf "%s\n" ~/.config/* |dmenu -p "config dir: " -l 20)"
+choice=$(echo "${d##*/}")
+(cd "$d"
+case $choice in
+	dwm|st|dmenu) 
+		([ -e config.def.h ] && vim config.def.h) ||
+		([ -e config.h ] && vim config.h)
+		;;
+	picom)
+		cd $d && vim picom.conf ;;
+	termite)
+		cd $d vim && conf ;;
+	*) cd $d ;;
+esac
+)

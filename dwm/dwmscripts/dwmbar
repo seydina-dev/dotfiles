@@ -1,0 +1,17 @@
+#!/bin/sh
+
+lb=~/.local/bin/dwmscripts
+
+while true; do
+
+	CPU=$($lb/dwmcpu)
+	MEM=$($lb/dwmmemory)
+	NET=$($lb/dwmnet)
+	TEMP=$($lb/dwmtemp)
+	BATT=$($lb/dwmbatt)
+	TIME=$($lb/dwmclock)
+	xsetroot -name "| $CPU | $MEM | $NET | $TEMP | $BATT | $TIME"
+
+	sleep 5s
+	
+done &

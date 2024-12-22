@@ -1,0 +1,13 @@
+#! /bin/sh
+
+f_format="\.webm$|\.flv$|\.vob$|\.ogg$|\.ogv$|\.gifv$|\.mng$|\.avi$|\.mov$|\.qt$|\.wmv$|\.yuv$|\.mkv$|\.mp4$|\.m4v$|\.mp4$|\.svi$|\.3gp$|\.flv$"
+
+tuto=/run/media/amiral/DATA/Tuto
+movies=/run/media/amiral/DATA/Movies
+series=/run/media/amiral/DATA/Series
+clip_video=/run/media/amiral/DATA/Clip-video
+music=/run/media/amiral/DATA/Music
+
+video=$(find $tuto -type f | grep -E "$f_format" | fzf --prompt="file you want to play" --reverse)
+
+[ ! -z "$video" ] && exec nohup mpv "$video" 2>&1 >/dev/null || exit 1

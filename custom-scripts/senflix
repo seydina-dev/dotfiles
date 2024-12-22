@@ -1,0 +1,53 @@
+#!/bin/sh
+
+# Dependencies:  webtorrent(stream magnet link) - pup(scraping) - mpv(media player)
+
+get_titles(){
+	pup 'table.table a text{}' < $cachedir/resp.html > $cachedir/titles.txt
+}
+
+get_links(){
+	pup 'table.table a attr{href}' < $cachedir/resp.html > $cachedir/links.txt
+}
+
+get_sizes(){
+	pup 'table.table td:nth-child(2) text{}' < $cachedir/resp.html > $cachedir/size.txt
+	awk '{print NR " - ["$0"]"}' $cachedir/size.txt > $cachedir/sizes.txt
+}
+
+dl_page_rq(){
+	curl -s $dl_page_url | pup 'div.btn-magnet a attr{href}' > $cachedir/dl_page.tmp
+}
+
+[ ! -d "$HOME/.cache/senflix" ] && mkdir -p $HOME/.cache/senflix
+
+menu="dmenu -i -l 30"
+baseurl="https://www.oxtorrent.co"
+cachedir="$HOME/.cache/senflix"
+
+
+main(){
+	[ -z "$1" ] && query="$(dmenu -p 'Recherche Torrent: ' <&-)" || query="$1"
+	query="$(echo $query | sed 's/ /-/g')"
+	curl -s $baseurl/recherche/series-francaise/$query > $cachedir/resp.html
+	get_titles
+	[ -z "$(cat $cachedir/titles.txt)" ] && (notify-send "😔 No Result found.") && exit
+	get_sizes
+	
+	# formating and display data inside dmenu
+	selected_line="$(paste -d\  $cachedir/sizes.txt  $cachedir/titles.txt| $menu |cut -d\- -f1)"
+	[ -z "$selected_line" ] && exit 0
+	
+	get_links
+	dl_page_url="$baseurl$(sed -n "$selected_line p" $cachedir/links.txt)"
+	dl_page_rq $dl_page_url 
+	magnet=$(cat $cachedir/dl_page.tmp | awk -F'&' '{print $1}')
+	echo "$magnet" | xclip -selection c	
+	# downloading the magnet using aria2c
+	aria2c -s 16 -x 16 -d ~/media/Series $magnet
+
+	# streaming the magnet with mpv as media player
+	#webtorrent "$magnet" --mpv	
+}
+
+main "$1"

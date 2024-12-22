@@ -1,0 +1,11 @@
+#!/bin/bash
+
+## WIFI
+wifi() {
+dev="$(nmcli dev|grep wlan0)"
+status="$(nmcli dev|grep wlan0|awk '{print $3}')"
+ssid="$(nmcli dev|grep wlan0|awk '{print $4}')"
+[[ "$status" == "connected" ]] && printf " $ssid\n" || printf "$status\n"
+}
+
+wifi

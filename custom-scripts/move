@@ -1,0 +1,23 @@
+#!/bin/sh
+
+# videos=$(sudo find $HOME/media/recovery -type f | grep -E "\.webm$|\.flv$|\.vob$|\.ogv$|\.gifv$|\.mng$|\.avi$|\.mov$|\.qt$|\.wmv$|\.yuv$|\.mkv$|\.mp4$|\.m4v$|\.mp4$|\.svi$|\.3gp$|\.flv$")
+# audios=$(sudo find $HOME/media/recovery -type f | grep -E "\.mp3$|\.m4a$|\.ogg$|\.flac$|\.acc$|\.wav$|\.wma$|\.midi$")
+pics=$(sudo find $HOME/media/recovery -type f | grep -E "\.jpeg$|\.jpg$|\.png$|\.gif$|\.webp$")
+
+video_dir=$HOME/media/videos-recovery
+curious_1to_dir=/media/curious_1to/media/videos_recovery
+pic_dir=/media/curious_1to/media/pictures-recovery
+audio_dir=$HOME/media/audios-recovery
+
+# n_files=$(echo "$videos" | wc -w)
+# r_files=$(echo "$videos" | wc -w)
+
+n_files=$(echo "$pics" | wc -w)
+r_files=$(echo "$pics" | wc -w)
+
+for v in $pics
+do
+	echo -e "\e[1A\e[kRemained file to move: $(tput setaf 166) $((r_files--))/$n_files $(tput sgr0)"
+	video=$(readlink -f $v)
+	sudo mv $video $pic_dir
+done

@@ -1,0 +1,13 @@
+#! /bin/sh
+
+compressed_dir="compressed"
+
+[ ! -d "./${compressed_dir}" ] && mkdir ${compressed_dir}
+
+let n=1000; # use sed to get the last number(filename) and set it as init value for n
+for f in "${@}"
+do
+	extension="$(echo ${f##*.})"
+	ffmpeg -i "${f}" "${compressed_dir}/${n}.$extension"
+	((n++))
+done
