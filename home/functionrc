@@ -90,7 +90,8 @@ setres() {
 }
 
 ggc(){
-
-	 git config --global user.email "seydinabedev@gmail.com"
-	 git config --global user.name "seydina"
+  read -p "Enter your name: " name
+  read -p "Enter your email: " email
+	git config --global user.name "$name"
+	git config --global user.email "$email"
 }

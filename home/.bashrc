@@ -1,7 +1,3 @@
-#
-# ~/.bashrc
-#
-
 # If not running interactively, don't do anything
 [[ $- != *i* ]] && return
 
@@ -12,5 +8,3 @@ source ~/.aliasrc
 source ~/.functionrc
 
 PS1="[\u@\h \W]\$ "
-
-

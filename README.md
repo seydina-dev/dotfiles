@@ -8,7 +8,9 @@ Personal Linux environment configuration with automated setup for window manager
 - Base development tools (`base-devel` on Arch, `build-essential` on Debian/Ubuntu)
 - Sudo privileges
 
-## Structure
+## Structure Overview
+
+The setup is organized into modular components:
 
 ```
 ├── .config/           # Application configs
@@ -18,9 +20,35 @@ Personal Linux environment configuration with automated setup for window manager
 │   ├── qt5ct/         # Qt5 settings
 │   ├── sxhkd/         # Hotkey daemon
 │   └── sxiv/          # Simple X Image Viewer
-├── base-setup.sh      # Main setup script
-├── config.sh          # Shared configuration
 ├── custom-scripts/    # Custom utility scripts
+│   ├── ani
+│   ├── dad
+│   ├── elbin
+│   ├── ffcompress
+│   ├── findd
+│   ├── fzftest
+│   ├── leb
+│   ├── mdisk
+│   ├── mountdisk
+│   ├── mountjutsu
+│   ├── mountphone
+│   ├── move
+│   ├── mphone
+│   ├── notflix
+│   ├── play
+│   ├── record
+│   ├── rmcl
+│   ├── rmd
+│   ├── screen
+│   ├── screenManager
+│   ├── senflix
+│   ├── setbg
+│   ├── setwal
+│   ├── smci
+│   ├── udisk
+│   ├── umountphone
+│   ├── uphone
+│   └── vimv
 ├── dwm/               # DWM window manager setup
 │   ├── .xinitrc
 │   ├── .Xresources
@@ -34,8 +62,12 @@ Personal Linux environment configuration with automated setup for window manager
 │   ├── aliasrc
 │   ├── functionrc
 │   └── path_variablerc
-├── README.md
-└── utils.sh          # Utility functions
+├── setup-scripts/     # Setup scripts
+│   ├── config.sh
+│   ├── packages.sh    # The packages repository
+│   └── utils.sh
+├── README.md          # This file
+└── setup.sh           # Main setup script
 ```
 
 ## Quick Start
@@ -49,19 +81,18 @@ cd ~/.dotfiles
 
 2. Basic system setup:
 
-```bash
-./base-setup.sh
-```
+````bash
+./setup.sh
 
 3. (Optional) DWM window manager setup:
 
 ```bash
 ./dwm/dwm-setup.sh
-```
+````
 
 ## What Gets Installed
 
-### Base Setup (`base-setup.sh`)
+### Base Setup (`setup.sh`)
 
 - Essential packages (git, vim, curl)
 - Shell configurations (Bash, Zsh)
@@ -81,7 +112,7 @@ cd ~/.dotfiles
 
 ### Manual Customization
 
-1. Edit `config.sh` to modify:
+1. Edit `setup-scripts/config.sh` to modify:
 
    - Installation paths
    - Package selections
@@ -93,7 +124,7 @@ cd ~/.dotfiles
    - Development tool configs
 
 3. Shell customization:
-   - Aliases: Edit files in `home/aliasrc`
+   - Aliases: Edit `home/aliasrc`
    - Functions: Modify `home/functionrc`
 
 ### Window Manager Setup
@@ -126,7 +157,7 @@ sudo apt update && sudo apt install build-essential git
 3. Broken symlinks:
 
 ```bash
-./base-setup.sh --repair
+./setup.sh --repair
 ```
 
 ## Maintenance
@@ -136,7 +167,7 @@ sudo apt update && sudo apt install build-essential git
 ```bash
 cd ~/.dotfiles
 git pull
-./base-setup.sh --update
+./setup.sh --update
 ```
 
 ### Backing Up
