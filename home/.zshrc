@@ -5,17 +5,21 @@ fi
 # Path Variables
 # Path to your Oh My Zsh installation.
 export ZSH="$HOME/.oh-my-zsh"
-source ~/.path_variablerc
+source ~/path_variablerc
 
 # Aliases
-source ~/.aliasrc
+source ~/aliasrc
 
 # Functions
-source ~/.functionrc
+source ~/functionrc
 
-plugins=( git zsh-syntax-highlighting zsh-autosuggestions fzf postgres tmux zsh-interactive-cd z)
+#plugins=( git zsh-syntax-highlighting zsh-autosuggestions fzf postgres tmux zsh-interactive-cd z)
+plugins=(git)
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
-source /usr/share/nvm/init-nvm.sh
+#
+#source /usr/share/nvm/init-nvm.sh
+
+eval "$(starship init zsh)"
