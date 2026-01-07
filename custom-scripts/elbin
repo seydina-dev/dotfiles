@@ -21,4 +21,4 @@ wofi_command="wofi --show dmenu \
 
 [[ ! $(pidof wofi) ]] && script=$(find $SCRIPTSDIR -maxdepth 1 -type f | ${wofi_command} 2>/dev/null) || pkill wofi
 
-[[ $script ]] && kitty -e micro $script || pkill wofi
+[[ $script ]] && alacritty-e helix $script || pkill wofi

@@ -1,146 +1,310 @@
-# """"""""""""""
-# " ./setup.sh "
-# """"""""""""""
-#!/bin/sh
+#!/usr/bin/env bash
 
-# Source shared files
-source_shared_files() {
-    SCRIPTS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/setup-scripts" && pwd)"
-    source "$SCRIPTS_DIR/config.sh" # Source shared variables
-    source "$SCRIPTS_DIR/utils.sh" # Source utility functions
-    source "$SCRIPTS_DIR/packages.sh" # Source packages repository
+set -eo pipefail
+
+# --- Core Configuration ---
+readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+readonly MODULES_DIR="$SCRIPT_DIR/modules"
+readonly LIB_DIR="$SCRIPT_DIR/lib"
+readonly CONFIG_DIR="$SCRIPT_DIR/config"
+readonly BACKUP_DIR="$HOME/.dotfiles.backup.$(date +%Y%m%d_%H%M%S)"
+
+# --- Source Core Libraries ---
+source "$LIB_DIR/colors.sh"
+source "$LIB_DIR/logger.sh"  # Source logger before other libs to ensure logging is available
+source "$LIB_DIR/helpers.sh"
+source "$LIB_DIR/validators.sh"
+
+# --- Global State ---
+DRY_RUN=false
+VERBOSE=false
+FORCE=false
+declare -a EXECUTED_STEPS=()
+declare -A INSTALLED_PACKAGES=()
+
+# --- Usage Information ---
+usage() {
+    cat << EOF
+${BOLD}Dotfiles Setup Manager${RESET}
+
+${GREEN}Usage:${RESET} $(basename "$0") [OPTIONS]
+
+${GREEN}Options:${RESET}
+  -h, --help          Show this help message
+  -d, --dry-run       Show what would be done without making changes
+  -v, --verbose       Enable verbose output
+  -f, --force         Skip confirmation prompts
+  -m, --modules       Run specific modules (comma-separated)
+  -s, --skip          Skip specific modules (comma-separated)
+  --show-logs         Show recent log entries after setup
+
+${GREEN}Available Modules:${RESET}
+  base        Install base packages and dependencies
+  dotfiles    Link dotfiles and configuration
+  services    Enable system services
+  dwm         Install DWM and window manager components
+  fonts       Install fonts
+  scripts     Install custom scripts
+
+${GREEN}Examples:${RESET}
+  $(basename "$0")                    # Full installation
+  $(basename "$0") --dry-run          # Preview changes
+  $(basename "$0") -m base,dotfiles   # Only run specific modules
+  $(basename "$0") -s dwm,fonts       # Skip specific modules
+EOF
 }
 
-print_source_code(){
-    [ ! -z "$(command -v bat)" ] && bat "$SCRIPTS_DIR/config.sh" >./base-setup.sh || less "$SCRIPTS_DIR/config.sh" >base-setup.sh
-    [ ! -z "$(command -v bat)" ] && bat "$SCRIPTS_DIR/utils.sh" >>./base-setup.sh || less "$SCRIPTS_DIR/utils.sh" >>base-setup.sh
-    [ ! -z "$(command -v bat)" ] && bat "$0" >>./base-setup.sh || less "$0" >>base-setup.sh
-    [ ! -z "$(command -v bat)" ] && bat "./base-setup.sh" || less "./base-setup.sh"
-    rm -rf ./base-setup.sh
+# --- Argument Parsing ---
+parse_arguments() {
+    local modules=""
+    local skip=""
+    local show_logs=false
 
-    read -p "Press enter to continue"
-}
-
-# Function to backup existing dotfiles
-backup_dotfiles() {
-    print_status "Creating backup of existing dotfiles..."
-    backup_dir="$HOME/.dotfiles.backup.$(date +%Y%m%d_%H%M%S)"
-    mkdir -p "$backup_dir"
-    
-    [ -f "$HOME/.bashrc" ] && mv "$HOME/.bashrc" "$backup_dir/"
-    [ -f "$HOME/.zshrc" ] && mv "$HOME/.zshrc" "$backup_dir/"
-    [ -f "$HOME/.vimrc" ] && mv "$HOME/.vimrc" "$backup_dir/"
-    [ -f "$HOME/.aliasrc" ] && mv "$HOME/.aliasrc" "$backup_dir/"
-    [ -f "$HOME/.functionrc" ] && mv "$HOME/.functionrc" "$backup_dir/"
-    [ -f "$HOME/.path_variablerc" ] && mv "$HOME/.path_variablerc" "$backup_dir/"
-}
-
-
-# Function to create symbolic links
-create_home_symlinks() {
-    print_status "Linking the Home dotfiles..."
-    
-    print_ln_command "$HOME_DOTFILES_SRC_DIR/.zshrc" "$HOME_DOTFILES_DEST_DIR/.zshrc"
-    ln -sf "$HOME_DOTFILES_SRC_DIR/.zshrc" "$HOME_DOTFILES_DEST_DIR/.zshrc"
-
-    print_ln_command "$HOME_DOTFILES_SRC_DIR/.vimrc" "$HOME_DOTFILES_DEST_DIR/.vimrc"
-    ln -sf "$HOME_DOTFILES_SRC_DIR/.vimrc" "$HOME_DOTFILES_DEST_DIR/.vimrc"
-
-    print_ln_command "$HOME_DOTFILES_SRC_DIR/.bashrc" "$HOME_DOTFILES_DEST_DIR/.bashrc"
-    ln -sf "$HOME_DOTFILES_SRC_DIR/.bashrc" "$HOME_DOTFILES_DEST_DIR/.bashrc"
-
-    print_ln_command "$HOME_DOTFILES_SRC_DIR/aliasrc" "$HOME_DOTFILES_DEST_DIR/.aliasrc"
-    ln -sf "$HOME_DOTFILES_SRC_DIR/aliasrc" "$HOME_DOTFILES_DEST_DIR/.aliasrc"
-    
-    print_ln_command "$HOME_DOTFILES_SRC_DIR/functionrc" "$HOME_DOTFILES_DEST_DIR/.functionrc"
-    ln -sf "$HOME_DOTFILES_SRC_DIR/functionrc" "$HOME_DOTFILES_DEST_DIR/.functionrc"
-    
-    print_ln_command "$HOME_DOTFILES_SRC_DIR/path_variablerc" "$HOME_DOTFILES_DEST_DIR/.path_variablerc"
-    ln -sf "$HOME_DOTFILES_SRC_DIR/path_variablerc" "$HOME_DOTFILES_DEST_DIR/.path_variablerc"
-}
-
-create_local_bin_symlink() {
-    for script in "$PWD/custom-scripts"/*; do
-        print_ln_command "$script" "$DOTLOCAL_BIN_DIR/$(basename "$script")"
-        ln -sf "$script" "$DOTLOCAL_BIN_DIR/$(basename "$script")"
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            -h|--help)
+                usage
+                exit 0
+                ;;
+            -d|--dry-run)
+                DRY_RUN=true
+                shift
+                ;;
+            -v|--verbose)
+                VERBOSE=true
+                LOG_LEVEL=$LOG_DEBUG  # Set to debug level for verbose output
+                shift
+                ;;
+            -f|--force)
+                FORCE=true
+                shift
+                ;;
+            -m|--modules)
+                modules="$2"
+                shift 2
+                ;;
+            -s|--skip)
+                skip="$2"
+                shift 2
+                ;;
+            --show-logs)
+                show_logs=true
+                shift
+                ;;
+            *)
+                log_error "Unknown option: $1"
+                usage
+                exit 1
+                ;;
+        esac
     done
-}
 
-# Function to install base packages
-install_base_pkgs() {
-    print_status "Installing base packages..."
-    for pkg in "${BASE_PKGS[@]}"; do
-        install_pkg "${pkg}"
-    done
-}
-
-# Function to enable essential services
-enable_services() {
-    print_status "Enabling essential services..."
-    if command -v systemctl >/dev/null; then
-        for service in "${SERVICES[@]}"; do
-            if systemctl is-enabled "$service" >/dev/null 2>&1; then
-                print_status "$service is already enabled"
-            else
-                sudo systemctl enable "$service"
-                print_status "Enabled $service"
-            fi
-        done
+    # Module selection logic
+    if [[ -n "$modules" ]]; then
+        IFS=',' read -ra SELECTED_MODULES <<< "$modules"
     else
-        print_error "systemd not found, skipping service enablement"
+        SELECTED_MODULES=("base" "dotfiles" "services" "scripts" "fonts" "dwm")
+    fi
+
+    if [[ -n "$skip" ]]; then
+        IFS=',' read -ra SKIP_MODULES <<< "$skip"
+        for skip_module in "${SKIP_MODULES[@]}"; do
+            SELECTED_MODULES=("${SELECTED_MODULES[@]/$skip_module}")
+        done
+    fi
+
+    # Store show_logs in global if needed, or handle immediately
+    if [[ "$show_logs" == true ]]; then
+        SHOW_LOGS_AFTER=true
+    else
+        SHOW_LOGS_AFTER=false
     fi
 }
 
-setup_dotconfig() {
-    print_status "Linking the .config directories..."
+# --- Module Loader ---
+load_module() {
+    local module="$1"
+    local module_file="$MODULES_DIR/${module}.sh"
 
-    print_ln_command "$DOTCONFIG_SRC_DIR/kitty" "$DOTCONFIG_DEST_DIR/kitty"
-    ln -sf "$DOTCONFIG_SRC_DIR/kitty" "$DOTCONFIG_DEST_DIR/kitty"
-
-    print_ln_command "$DOTCONFIG_SRC_DIR/gtk-3.0" "$DOTCONFIG_DEST_DIR/gtk-3.0"
-    ln -sf "$DOTCONFIG_SRC_DIR/gtk-3.0" "$DOTCONFIG_DEST_DIR/gtk-3.0"
-    
-    print_ln_command "$DOTCONFIG_SRC_DIR/picom" "$DOTCONFIG_DEST_DIR/picom"
-    ln -sf "$DOTCONFIG_SRC_DIR/picom" "$DOTCONFIG_DEST_DIR/picom"
-
-    print_ln_command "$DOTCONFIG_SRC_DIR/qt5ct" "$DOTCONFIG_DEST_DIR/qt5ct"
-    ln -sf "$DOTCONFIG_SRC_DIR/qt5ct" "$DOTCONFIG_DEST_DIR/qt5ct"
-
-    print_ln_command "$DOTCONFIG_SRC_DIR/sxhkd" "$DOTCONFIG_DEST_DIR/sxhkd"
-    ln -sf "$DOTCONFIG_SRC_DIR/sxhkd" "$DOTCONFIG_DEST_DIR/sxhkd"
-    
-    print_ln_command "$DOTCONFIG_SRC_DIR/sxiv" "$DOTCONFIG_DEST_DIR/sxiv"
-    ln -sf "$DOTCONFIG_SRC_DIR/sxiv" "$DOTCONFIG_DEST_DIR/sxiv"
-}
-
-install_dwm() {
-    printf "Do you want to install dwm? [y/N]: " && read choice
-    if [ "$choice" = "y" ] || [ "$choice" = "Y" ]; then
-        print_status "Installing dwm..."
-        cd dwm || { print_error "Failed to enter dwm directory" ; exit 1; }
-        chmod +x ./dwm-setup.sh && ./dwm-setup.sh
+    if [[ ! -f "$module_file" ]]; then
+        log_error "Module not found: $module"
+        return 1
     fi
+
+    log_debug "Loading module: $module"
+    source "$module_file"
 }
 
-# Main setup function
+# --- Main Execution Flow ---
 main() {
-    source_shared_files
-    print_source_code
-    print_status "Starting dotfiles setup..."
-    backup_dotfiles
-    install_aur_helper
-    install_base_pkgs
-    enable_services
-    setup_dotconfig
-    create_home_symlinks
-    create_local_bin_symlink
-    print_status "Base Setup completed successfully!"
-    install_dwm
-    print_status "Please restart your shell or run: source ~/.bashrc"
+    # Initialize logging first
+    if ! setup_logging; then
+        echo "Warning: Failed to initialize file logging, continuing with console output only"
+    fi
+
+    log_header "Starting Dotfiles Setup"
+
+    # Show log file location
+    show_log_info
+
+    # Pre-flight checks
+    detect_os
+    check_dependencies
+    setup_directories
+
+    # Load and execute modules
+    for module in "${SELECTED_MODULES[@]}"; do
+        if [[ -n "$module" ]]; then
+            execute_module "$module"
+        fi
+    done
+
+    # Post-installation verification
+    verify_installations
+
+    # Final summary
+    show_summary
 }
 
-# Debugging
-# source_shared_files
+# --- Post-installation Verification ---
+verify_installations() {
+    log_step "Verifying installations"
 
-# Run main function
-main
+    # Verify custom scripts if scripts module was executed
+    if [[ " ${EXECUTED_STEPS[@]} " =~ " scripts " ]]; then
+        load_module "scripts"
+        if declare -f verify_script_installation > /dev/null; then
+            verify_script_installation
+        fi
+    fi
+
+    # Verify symlinks if dotfiles module was executed
+    if [[ " ${EXECUTED_STEPS[@]} " =~ " dotfiles " ]]; then
+        load_module "dotfiles"
+        if declare -f verify_symlinks > /dev/null; then
+            verify_symlinks
+        fi
+    fi
+}
+
+# --- Module Execution ---
+execute_module() {
+    local module="$1"
+
+    log_section "Module: ${module^}"
+
+    if ! load_module "$module"; then
+        log_error "Failed to load module: $module"
+        return 1
+    fi
+
+    local module_func="module_${module}"
+    if declare -f "$module_func" > /dev/null; then
+        if $DRY_RUN; then
+            log_info "[DRY RUN] Would execute: $module_func"
+        else
+            if $FORCE || confirm "Run ${module} module?"; then
+                log_step "Starting ${module} module..."
+                if "$module_func"; then
+                    EXECUTED_STEPS+=("$module")
+                    log_success "Completed: $module"
+                else
+                    log_error "Failed: $module"
+                    if ! confirm "Continue despite failure?"; then
+                        exit 1
+                    fi
+                fi
+            else
+                log_info "Skipped: $module"
+            fi
+        fi
+    else
+        log_error "Module function not found: $module_func"
+    fi
+}
+
+# --- Pre-flight Checks ---
+check_dependencies() {
+    local deps=("bash" "git")
+    local missing=()
+
+    for dep in "${deps[@]}"; do
+        if ! command -v "$dep" > /dev/null; then
+            missing+=("$dep")
+        fi
+    done
+
+    if [[ ${#missing[@]} -gt 0 ]]; then
+        log_error "Missing dependencies: ${missing[*]}"
+        exit 1
+    fi
+}
+
+setup_directories() {
+    local dirs=("$(dirname "$BACKUP_DIR")" "$HOME/.local/bin" "$HOME/.config")
+
+    for dir in "${dirs[@]}"; do
+        if [[ ! -d "$dir" ]]; then
+            log_debug "Creating directory: $dir"
+            mkdir -p "$dir"
+        fi
+    done
+}
+
+# --- Summary Report ---
+show_summary() {
+    log_header "Setup Complete"
+
+    if [[ ${#EXECUTED_STEPS[@]} -eq 0 ]]; then
+        log_info "No modules were executed"
+        return
+    fi
+
+    log_success "Successfully executed ${#EXECUTED_STEPS[@]} modules:"
+    for step in "${EXECUTED_STEPS[@]}"; do
+        log_info "  ✓ $step"
+    done
+
+    if [[ ${#INSTALLED_PACKAGES[@]} -gt 0 ]]; then
+        log_success "Installed ${#INSTALLED_PACKAGES[@]} packages"
+    fi
+
+    # Show log file location again for convenience
+    show_log_info
+
+    if $DRY_RUN; then
+        log_warning "This was a dry run. No changes were made."
+    else
+        log_success "Dotfiles setup completed successfully!"
+        log_info "Restart your shell or run: exec zsh"
+    fi
+
+    # Show recent logs if requested
+    if [[ "${SHOW_LOGS_AFTER:-false}" == true ]]; then
+        echo
+        show_recent_logs 15
+    fi
+}
+
+# --- Signal Handling ---
+cleanup() {
+    log_debug "Cleaning up..."
+    # Add any cleanup tasks here
+}
+
+trap cleanup EXIT INT TERM
+
+# --- Entry Point ---
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    parse_arguments "$@"
+
+    if $DRY_RUN; then
+        log_warning "DRY RUN MODE: No changes will be made"
+    fi
+
+    if $VERBOSE; then
+        log_debug "Verbose mode enabled"
+    fi
+
+    main
+fi

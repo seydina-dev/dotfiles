@@ -14,10 +14,11 @@ alias pn=pnpm
 alias px=pnpx
 alias sb="source ~/.bashrc"
 alias sz="source ~/.zshrc"
-alias eb="$EDITOR ~/.bashrc" 
-alias ez="$EDITOR ~/.zshrc" 
+alias eb="$EDITOR ~/.bashrc"
+alias ez="$EDITOR ~/.zshrc"
 alias al="$EDITOR ~/.aliasrc"
 alias fn="$EDITOR ~/.functionrc"
+alias pv="$EDITOR ~/.bashrc"
 alias mdata="sudo mount /dev/sdb2 media/Datas/"
 alias phone="simple-mtpfs -o default_permissions --device"
 # alias exp="cd ~/media/experiment"
@@ -96,7 +97,7 @@ if [ $(command -v pacman) ]; then
 	alias pkg-u="sudo pacman -Syyu"
 	alias pkg-s="sudo pacman -Ss"
 	alias rmpaclock="sudo rm -R /var/lib/pacma/db.lck"
-	alias pac-refrech="pack --init && pack --populate && pac -Sy archlinux-keyring && pac -Su" 
+	alias pac-refrech="pack --init && pack --populate && pac -Sy archlinux-keyring && pac -Su"
 	# yay
 	alias ys="yay -S"
 	alias yss="yay -Ss"
@@ -104,13 +105,13 @@ if [ $(command -v pacman) ]; then
 	alias yq="yay -Qqe"
 	alias yr="yay -Rns"
 elif [ $(command -v apt) ]; then
-	alias pkg-i='sudo apt install' 
+	alias pkg-i='sudo apt install'
 	alias pkg-r='sudo apt remove'
 	alias pkg-u='sudo apt update'
 	alias pkg-s='apt search'
 elif [ $(command -v dnf) ]; then
 	alias pkg-i='sudo dnf install'
-	alias pkg-r='sudo dnf remove' 
+	alias pkg-r='sudo dnf remove'
 	alias pkg-u='sudo dnf update'
-	alias pkg-s='dnf search'  
+	alias pkg-s='dnf search'
 fi
