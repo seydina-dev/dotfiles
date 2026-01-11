@@ -1,0 +1,207 @@
+# =================================================
+#  Helix Editor — React Native / TypeScript / Rust
+# =================================================
+
+theme = "tokyonight"
+
+[editor]
+scrolloff = 5
+mouse = true
+middle-click-paste = true
+scroll-lines = 3
+shell = ["sh", "-c"]
+line-number = "relative"
+cursorline = true
+cursorcolumn = false
+continue-comments = true
+auto-completion = true
+path-completion = true
+auto-format = true
+idle-timeout = 250
+completion-timeout = 100
+preview-completion-insert = true
+completion-trigger-len = 1
+auto-info = true
+true-color = true
+undercurl = true
+bufferline = "multiple"
+color-modes = true
+text-width = 100
+insert-final-newline = true
+atomic-save = true
+trim-trailing-whitespace = true
+trim-final-newlines = true
+default-line-ending = "lf"
+end-of-line-diagnostics = "hint"
+indent-heuristic = "hybrid"
+jump-label-alphabet = "abcdefghijklmnopqrstuvwxyz"
+editor-config = true
+
+# Gutters configuration
+[editor.gutters]
+layout = ["diff", "diagnostics", "spacer", "line-numbers", "spacer"]
+
+[editor.gutters.line-numbers]
+min-width = 2
+
+# LSP configuration
+[editor.lsp]
+enable = true
+display-messages = true
+display-progress-messages = true
+auto-signature-help = true
+display-inlay-hints = true
+display-color-swatches = true
+display-signature-help-docs = true
+snippets = true
+goto-reference-include-declaration = true
+
+# Inline diagnostics
+[editor.inline-diagnostics]
+cursor-line = "warning"
+other-lines = "error"
+prefix-len = 1
+max-diagnostics = 3
+
+# Auto-save configuration
+[editor.auto-save]
+focus-lost = true
+after-delay.enable = true
+after-delay.timeout = 2000
+
+# Search behavior
+[editor.search]
+smart-case = true
+wrap-around = true
+
+# Smart tab navigation
+[editor.smart-tab]
+enable = true
+supersede-menu = false
+
+# Soft wrap for long lines
+[editor.soft-wrap]
+enable = true
+max-wrap = 25
+max-indent-retain = 0
+wrap-indicator = "↪"
+wrap-at-text-width = false
+
+# Indent guides
+[editor.indent-guides]
+render = true
+character = "╎"
+skip-levels = 1
+
+# Whitespace rendering
+[editor.whitespace]
+render = "none"
+
+# Statusline configuration
+[editor.statusline]
+left = ["mode", "spinner", "file-name", "file-modification-indicator"]
+center = ["version-control"]
+right = ["diagnostics", "position", "file-type"]
+separator = "│"
+mode.normal = "NORMAL"
+mode.insert = "INSERT"
+mode.select = "SELECT"
+diagnostics = ["warning", "error"]
+workspace-diagnostics = ["warning", "error"]
+
+# Cursor shape
+[editor.cursor-shape]
+normal = "block"
+insert = "bar"
+select = "underline"
+
+# File picker behavior
+[editor.file-picker]
+hidden = false
+follow-symlinks = true
+deduplicate-links = true
+parents = true
+ignore = true
+git-ignore = true
+git-global = true
+git-exclude = true
+
+# =================================================
+#  Keybindings
+# =================================================
+
+# [keys.normal]
+# # Format current buffer
+# "<leader>f" = ":format"
+
+# # Organize imports with Biome
+# "<leader>o" = "lsp_code_action"  # Then select organize imports
+
+# # Run lint fix for current file
+# "<leader>l" = ":write | :sh biome lint --apply %"
+
+# # Run format for current file
+# "<leader>F" = ":write | :sh biome format --write %"
+
+# # Run check (lint + format) for current file
+# "<leader>c" = ":write | :sh biome check --apply %"
+
+# # Rust-specific commands
+# "<leader>rr" = ":write | :sh cargo run"
+# "<leader>rb" = ":write | :sh cargo build"
+# "<leader>rt" = ":write | :sh cargo test"
+# "<leader>rc" = ":write | :sh cargo check"
+
+# # LSP keybindings
+# "gd" = "goto_definition"
+# "gr" = "goto_references"
+# "K" = "hover"
+# "<leader>r" = "rename_symbol"
+
+# # Code actions
+# "<leader>a" = "code_action"
+
+# # Quick file navigation
+# "<leader>p" = "file_picker"
+
+# # Window management
+# [keys.normal."<leader>w"]
+# h = "vsplit_left"
+# j = "hsplit_below"
+# k = "hsplit_above"
+# l = "vsplit_right"
+
+# # Buffer navigation
+# "<leader>b" = "buffer_picker"
+# "<leader>q" = "buffer_close"
+
+# # Smart tab navigation (enhanced)
+# "tab" = "move_parent_node_end"
+# "S-tab" = "move_parent_node_start"
+
+# [keys.insert]
+# "S-tab" = "move_parent_node_start"
+
+# [keys.select]
+# "tab" = "extend_parent_node_end"
+# "S-tab" = "extend_parent_node_start"
+
+# 🖇️ Clipboard support (Wayland or X11)
+# Choose one depending on your setup:
+# clipboard-provider = "xclip"
+# clipboard-provider = "termcode" # alternative if using terminal OSC52
+
+[keys.normal]
+"%" = "match_brackets"
+"*" = ["move_char_right", "move_prev_word_start", "move_next_word_end", "search_selection", "search_next"]
+"#" = ["move_char_right", "move_prev_word_start", "move_next_word_end", "search_selection", "search_prev"]
+"$" = "goto_line_end"
+0 = "goto_line_start"
+G = "goto_file_end"
+C-e = [
+  ':sh rm -f /tmp/unique-file',
+  ':insert-output yazi %{buffer_name} --chooser-file=/tmp/unique-file',
+  ':insert-output echo "\x1b[?1049h\x1b[?2004h" > /dev/tty',
+  ':open %sh{cat /tmp/unique-file}',
+  ':redraw',
+]

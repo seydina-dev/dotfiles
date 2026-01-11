@@ -1,0 +1,175 @@
+##############################################
+#  Language Servers Configuration
+##############################################
+
+[language-server.typescript-language-server]
+command = "typescript-language-server"
+args = ["--stdio"]
+
+[language-server.tailwindcss-language-server]
+command = "tailwindcss-language-server"
+args = ["--stdio"]
+
+[language-server.biome]
+command = "biome"
+args = ["lsp-proxy"]
+
+[language-server.rust-analyzer]
+command = "rust-analyzer"
+
+[language-server.rust-analyzer.config.check]
+command = "clippy"
+
+[language-server.rust-analyzer.config.cargo]
+allFeatures = true
+
+[language-server.bash-language-server]
+command = "bash-language-server"
+args = ["start"]
+
+[language-server.json-language-server]
+command = "vscode-json-languageserver"
+args = ["--stdio"]
+
+[language-server.marksman]
+command = "marksman"
+args = ["server"]
+
+[language-server.css-language-server]
+command = "vscode-css-languageserver"
+args = ["--stdio"]
+
+##############################################
+#  Language Configurations
+##############################################
+
+# JavaScript
+[[language]]
+name = "javascript"
+scope = "source.js"
+file-types = ["js", "mjs", "cjs"]
+roots = ["package.json", "node_modules"]
+language-servers = [
+  { name = "typescript-language-server", except-features = ["format"] },
+  { name = "biome", only-features = ["format", "diagnostics"] }
+]
+formatter = { command = "biome", args = ["format", "--stdin-file-path", "%{buffer_name}"] }
+auto-format = true
+indent = { tab-width = 2, unit = "  " }
+
+# TypeScript
+[[language]]
+name = "typescript"
+scope = "source.ts"
+file-types = ["ts"]
+roots = ["package.json", "tsconfig.json", "node_modules"]
+language-servers = [
+  { name = "typescript-language-server", except-features = ["format"] },
+  { name = "biome", only-features = ["format", "diagnostics"] }
+]
+formatter = { command = "biome", args = ["format", "--stdin-file-path", "%{buffer_name}"] }
+auto-format = true
+indent = { tab-width = 2, unit = "  " }
+
+# TSX (TypeScript + JSX)
+[[language]]
+name = "tsx"
+scope = "source.tsx"
+file-types = ["tsx"]
+roots = ["package.json", "tsconfig.json", "node_modules"]
+language-servers = [
+  { name = "typescript-language-server", except-features = ["format"] },
+  { name = "tailwindcss-language-server", only-features = ["hover", "completion"] },
+  { name = "biome", only-features = ["format", "diagnostics"] }
+]
+formatter = { command = "biome", args = ["format", "--stdin-file-path", "%{buffer_name}"] }
+auto-format = true
+indent = { tab-width = 2, unit = "  " }
+
+# JSX (JavaScript + JSX)
+[[language]]
+name = "jsx"
+scope = "source.jsx"
+file-types = ["jsx"]
+roots = ["package.json", "node_modules"]
+language-servers = [
+  { name = "typescript-language-server", except-features = ["format"] },
+  { name = "tailwindcss-language-server", only-features = ["hover", "completion"] },
+  { name = "biome", only-features = ["format", "diagnostics"] }
+]
+formatter = { command = "biome", args = ["format", "--stdin-file-path", "%{buffer_name}"] }
+auto-format = true
+indent = { tab-width = 2, unit = "  " }
+
+# Rust
+[[language]]
+name = "rust"
+scope = "source.rust"
+file-types = ["rs"]
+roots = ["Cargo.toml"]
+language-servers = ["rust-analyzer"]
+formatter = { command = "rustfmt" }
+auto-format = true
+indent = { tab-width = 4, unit = "    " }
+
+# Bash
+[[language]]
+name = "bash"
+scope = "source.sh"
+file-types = ["sh", "bash"]
+language-servers = ["bash-language-server"]
+comment-token = "#"
+indent = { tab-width = 2, unit = "  " }
+
+# JSON
+[[language]]
+name = "json"
+scope = "source.json"
+file-types = ["json"]
+language-servers = [
+  { name = "json-language-server", except-features = ["format"] },
+  { name = "biome", only-features = ["format", "diagnostics"] }
+]
+formatter = { command = "biome", args = ["format", "--stdin-file-path", "%{buffer_name}"] }
+auto-format = true
+indent = { tab-width = 2, unit = "  " }
+
+# Markdown
+[[language]]
+name = "markdown"
+scope = "text.markdown"
+file-types = ["md", "markdown"]
+language-servers = [
+  { name = "marksman", except-features = ["format"] },
+  { name = "biome", only-features = ["format"] }
+]
+formatter = { command = "biome", args = ["format", "--stdin-file-path", "%{buffer_name}"] }
+auto-format = true
+soft-wrap = { enable = true }
+
+# CSS
+[[language]]
+name = "css"
+scope = "source.css"
+file-types = ["css"]
+language-servers = [
+  { name = "css-language-server", except-features = ["format"] },
+  { name = "tailwindcss-language-server", only-features = ["hover", "completion"] },
+  { name = "biome", only-features = ["format", "diagnostics"] }
+]
+formatter = { command = "biome", args = ["format", "--stdin-file-path", "%{buffer_name}"] }
+auto-format = true
+indent = { tab-width = 2, unit = "  " }
+
+# SCSS
+[[language]]
+name = "scss"
+scope = "source.scss"
+file-types = ["scss"]
+language-servers = [
+  { name = "css-language-server", except-features = ["format"] },
+  { name = "biome", only-features = ["format", "diagnostics"] }
+]
+formatter = { command = "biome", args = ["format", "--stdin-file-path", "%{buffer_name}"] }
+auto-format = true
+indent = { tab-width = 2, unit = "  " }
