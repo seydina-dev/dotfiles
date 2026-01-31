@@ -1,5 +1,19 @@
-#! /bin/sh
+#!/bin/sh
+# rmd: Interactive directory removal
 
-for d in "$(find -type d | fzf -m)"; do printf "%s " "$d" >> nodes; done &&
-cat nodes | xargs rm -rf && rm -rf nodes
+if ! command -v fzf >/dev/null; then
+    echo "fzf not found."
+    exit 1
+fi
 
+SELECTED=$(find . -maxdepth 3 -type d 2>/dev/null | fzf -m --reverse --header="Select directories to DELETE (TAB to multi-select)")
+
+if [ -n "$SELECTED" ]; then
+    echo "$SELECTED"
+    printf "Are you sure you want to delete these directories? [y/N] "
+    read -r confirm
+    case "$confirm" in
+        [Yy]*) echo "$SELECTED" | xargs -I {} rm -rf "{}" && echo "Deleted." ;;
+        *) echo "Aborted." ;;
+    esac
+fi

@@ -1,0 +1,29 @@
+#!/bin/bash
+# sys-mount-phone: Mount Android device via simple-mtpfs
+
+MOUNT_POINT="$HOME/media/phone"
+[ -d "$MOUNT_POINT" ] || mkdir -p "$MOUNT_POINT"
+
+# Check if already mounted
+if mountpoint -q "$MOUNT_POINT"; then
+    echo "Device already mounted on $MOUNT_POINT"
+    exit 0
+fi
+
+# List devices and select
+DEVICES=$(simple-mtpfs -l 2>/dev/null)
+if [ -z "$DEVICES" ]; then
+    notify-send "MTP Error" "No Android devices found."
+    exit 1
+fi
+
+SELECTED=$(echo "$DEVICES" | sys-menu "Select Phone:")
+[ -z "$SELECTED" ] && exit 0
+
+DEV_ID=$(echo "$SELECTED" | cut -d: -f1)
+
+if simple-mtpfs --device "$DEV_ID" "$MOUNT_POINT"; then
+    notify-send "Phone Mounted" "Available at $MOUNT_POINT"
+else
+    notify-send "MTP Error" "Failed to mount device."
+fi

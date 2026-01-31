@@ -1,0 +1,15 @@
+#!/bin/sh
+# sys-mount-disk: Interactive partition mounter using udisksctl
+
+# List available unmounted partitions
+DEV=$(lsblk -lpno NAME,SIZE,FSTYPE,MOUNTPOINT | grep -v ' $' | awk '$4 == "" {print $1 " (" $2 " " $3 ")"}' | sys-menu "Mount Disk:")
+[ -z "$DEV" ] && exit 0
+
+PARTITION=$(echo "$DEV" | awk '{print $1}')
+
+if udisksctl mount -b "$PARTITION"; then
+    MOUNT_PATH=$(lsblk -no MOUNTPOINT "$PARTITION" | head -n1)
+    notify-send "Disk Mounted" "$PARTITION mounted at $MOUNT_PATH"
+else
+    notify-send "Mount Error" "Failed to mount $PARTITION"
+fi

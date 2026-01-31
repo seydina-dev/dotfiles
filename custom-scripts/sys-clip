@@ -1,0 +1,28 @@
+#!/bin/sh
+# sys-clip: Universal clipboard helper
+# Usage: echo "text" | sys-clip (copy)
+#        sys-clip -o (paste)
+
+if [ "$1" = "-o" ]; then
+    if [ -n "$WAYLAND_DISPLAY" ] && command -v wl-paste >/dev/null 2>&1; then
+        wl-paste
+    elif [ -n "$DISPLAY" ] && command -v xclip >/dev/null 2>&1; then
+        xclip -selection clipboard -o
+    elif command -v termux-clipboard-get >/dev/null 2>&1; then
+        termux-clipboard-get
+    elif command -v pbpaste >/dev/null 2>&1; then
+        pbpaste
+    fi
+else
+    if [ -n "$WAYLAND_DISPLAY" ] && command -v wl-copy >/dev/null 2>&1; then
+        wl-copy
+    elif [ -n "$DISPLAY" ] && command -v xclip >/dev/null 2>&1; then
+        xclip -selection clipboard
+    elif command -v termux-clipboard-set >/dev/null 2>&1; then
+        termux-clipboard-set
+    elif command -v pbcopy >/dev/null 2>&1; then
+        pbcopy
+    else
+        cat
+    fi
+fi

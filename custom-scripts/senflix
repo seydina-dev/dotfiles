@@ -1,53 +1,49 @@
 #!/bin/sh
+# senflix: Search and stream series (French)
+# Dependencies: pup, curl, aria2c (or webtorrent)
 
-# Dependencies:  webtorrent(stream magnet link) - pup(scraping) - mpv(media player)
+[ ! -d "$HOME/.cache/senflix" ] && mkdir -p "$HOME/.cache/senflix"
 
-get_titles(){
-	pup 'table.table a text{}' < $cachedir/resp.html > $cachedir/titles.txt
-}
-
-get_links(){
-	pup 'table.table a attr{href}' < $cachedir/resp.html > $cachedir/links.txt
-}
-
-get_sizes(){
-	pup 'table.table td:nth-child(2) text{}' < $cachedir/resp.html > $cachedir/size.txt
-	awk '{print NR " - ["$0"]"}' $cachedir/size.txt > $cachedir/sizes.txt
-}
-
-dl_page_rq(){
-	curl -s $dl_page_url | pup 'div.btn-magnet a attr{href}' > $cachedir/dl_page.tmp
-}
-
-[ ! -d "$HOME/.cache/senflix" ] && mkdir -p $HOME/.cache/senflix
-
-menu="dmenu -i -l 30"
-baseurl="https://www.oxtorrent.co"
-cachedir="$HOME/.cache/senflix"
-
+MENU="sys-menu"
+BASEURL="https://www.oxtorrent.co"
+CACHEDIR="$HOME/.cache/senflix"
 
 main(){
-	[ -z "$1" ] && query="$(dmenu -p 'Recherche Torrent: ' <&-)" || query="$1"
-	query="$(echo $query | sed 's/ /-/g')"
-	curl -s $baseurl/recherche/series-francaise/$query > $cachedir/resp.html
-	get_titles
-	[ -z "$(cat $cachedir/titles.txt)" ] && (notify-send "😔 No Result found.") && exit
-	get_sizes
-	
-	# formating and display data inside dmenu
-	selected_line="$(paste -d\  $cachedir/sizes.txt  $cachedir/titles.txt| $menu |cut -d\- -f1)"
-	[ -z "$selected_line" ] && exit 0
-	
-	get_links
-	dl_page_url="$baseurl$(sed -n "$selected_line p" $cachedir/links.txt)"
-	dl_page_rq $dl_page_url 
-	magnet=$(cat $cachedir/dl_page.tmp | awk -F'&' '{print $1}')
-	echo "$magnet" | xclip -selection c	
-	# downloading the magnet using aria2c
-	aria2c -s 16 -x 16 -d ~/media/Series $magnet
+    if [ -z "$1" ]; then
+        query=$(echo "" | sys-menu "Recherche Torrent:")
+    else
+        query="$1"
+    fi
+    
+    [ -z "$query" ] && exit 0
+    query=$(echo "$query" | sed 's/ /-/g')
+    
+    curl -s "$BASEURL/recherche/series-francaise/$query" > "$CACHEDIR/resp.html"
+    
+    if ! command -v pup >/dev/null; then
+        echo "Error: 'pup' is required for scraping."
+        exit 1
+    fi
 
-	# streaming the magnet with mpv as media player
-	#webtorrent "$magnet" --mpv	
+    pup 'table.table a text{}' < "$CACHEDIR/resp.html" > "$CACHEDIR/titles.txt"
+    [ ! -s "$CACHEDIR/titles.txt" ] && notify-send "😔 No Result found." && exit
+
+    pup 'table.table td:nth-child(2) text{}' < "$CACHEDIR/resp.html" | awk '{print NR " - ["$0"]"}' > "$CACHEDIR/sizes.txt"
+    pup 'table.table a attr{href}' < "$CACHEDIR/resp.html" > "$CACHEDIR/links.txt"
+    
+    SELECTED_LINE=$(paste -d\  "$CACHEDIR/sizes.txt" "$CACHEDIR/titles.txt" | $MENU "Select Torrent:" | cut -d\- -f1 | tr -d ' ')
+    [ -z "$SELECTED_LINE" ] && exit 0
+    
+    DL_PAGE_URL="$BASEURL$(sed -n "${SELECTED_LINE}p" "$CACHEDIR/links.txt")"
+    MAGNET=$(curl -s "$DL_PAGE_URL" | pup 'div.btn-magnet a attr{href}' | awk -F'&' '{print $1}')
+    
+    if [ -n "$MAGNET" ]; then
+        echo "$MAGNET" | sys-clip
+        notify-send "Magnet copied to clipboard"
+        aria2c -s 16 -x 16 -d ~/media/Series "$MAGNET"
+    else
+        notify-send "Error: Could not find magnet link."
+    fi
 }
 
 main "$1"

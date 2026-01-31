@@ -1,0 +1,14 @@
+#!/bin/sh
+# sys-unmount-disk: Interactive partition unmounter
+
+# List mounted partitions
+DEV=$(lsblk -lpno NAME,SIZE,FSTYPE,MOUNTPOINT | grep '/run/media\|/mnt\|/media' | awk '{print $1 " (" $4 ")"}' | sys-menu "Unmount Disk:")
+[ -z "$DEV" ] && exit 0
+
+PARTITION=$(echo "$DEV" | awk '{print $1}')
+
+if udisksctl unmount -b "$PARTITION"; then
+    notify-send "Disk Unmounted" "$PARTITION safe to remove."
+else
+    notify-send "Unmount Error" "Failed to unmount $PARTITION"
+fi

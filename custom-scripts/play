@@ -1,13 +1,17 @@
-#! /bin/sh
+#!/bin/sh
+# sys-play: Interactive media player
 
-f_format="\.webm$|\.flv$|\.vob$|\.ogg$|\.ogv$|\.gifv$|\.mng$|\.avi$|\.mov$|\.qt$|\.wmv$|\.yuv$|\.mkv$|\.mp4$|\.m4v$|\.mp4$|\.svi$|\.3gp$|\.flv$"
+F_FORMAT="\.webm$|\.flv$|\.vob$|\.ogg$|\.ogv$|\.gifv$|\.mng$|\.avi$|\.mov$|\.qt$|\.wmv$|\.yuv$|\.mkv$|\.mp4$|\.m4v$|\.svi$|\.3gp$"
 
-tuto=/run/media/amiral/DATA/Tuto
-movies=/run/media/amiral/DATA/Movies
-series=/run/media/amiral/DATA/Series
-clip_video=/run/media/amiral/DATA/Clip-video
-music=/run/media/amiral/DATA/Music
+# Check common media directories
+SEARCH_DIRS="$HOME/media $HOME/Videos $HOME/Downloads"
+for d in /run/media/$USER/*; do
+    [ -d "$d" ] && SEARCH_DIRS="$SEARCH_DIRS $d"
+done
 
-video=$(find $tuto -type f | grep -E "$f_format" | fzf --prompt="file you want to play" --reverse)
+VIDEO=$(find $SEARCH_DIRS -maxdepth 4 -type f 2>/dev/null | grep -E "$F_FORMAT" | sys-menu "Select Media:")
 
-[ ! -z "$video" ] && exec nohup mpv "$video" 2>&1 >/dev/null || exit 1
+if [ -n "$VIDEO" ]; then
+    notify-send "Playing" "$(basename "$VIDEO")"
+    exec nohup mpv "$VIDEO" >/dev/null 2>&1
+fi

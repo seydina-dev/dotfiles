@@ -1,24 +1,25 @@
-#! /bin/sh
+#!/bin/sh
+# elbin: Interactive script editor
 
-CONFIG="$HOME/.config/hypr/wofi/config"
-STYLE="$HOME/.config/hypr/wofi/style.css"
-COLORS="$HOME/.config/hypr/wofi/colors"
-SCRIPTSDIR="$HOME/.local/bin"
+SCRIPTS_DIR="$HOME/.local/bin"
 
-# wofi window config (in %)
-WIDTH=20
-HEIGHT=60
+if ! command -v helix >/dev/null && ! command -v nvim >/dev/null; then
+    EDITOR="vi"
+else
+    EDITOR="${EDITOR:-helix}"
+fi
 
-## Wofi Command
-wofi_command="wofi --show dmenu \
-			--prompt scripts...
-			--conf $CONFIG --style $STYLE --color $COLORS \
-			--width=$WIDTH% --height=$HEIGHT% \
-			--cache-file=/dev/null \
-			--hide-scroll --no-actions \
-			--matching=fuzzy"
+# Find all scripts in bin
+SELECTED=$(find "$SCRIPTS_DIR" -maxdepth 1 -type f -executable 2>/dev/null | sys-menu "Edit Script:")
 
-
-[[ ! $(pidof wofi) ]] && script=$(find $SCRIPTSDIR -maxdepth 1 -type f | ${wofi_command} 2>/dev/null) || pkill wofi
-
-[[ $script ]] && alacritty-e helix $script || pkill wofi
+if [ -n "$SELECTED" ]; then
+    if [ -n "$TERMINAL" ]; then
+        $TERMINAL -e "$EDITOR" "$SELECTED"
+    elif command -v kitty >/dev/null; then
+        kitty -e "$EDITOR" "$SELECTED"
+    elif command -v alacritty >/dev/null; then
+        alacritty -e "$EDITOR" "$SELECTED"
+    else
+        "$EDITOR" "$SELECTED"
+    fi
+fi

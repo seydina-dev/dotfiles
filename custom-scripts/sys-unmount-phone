@@ -1,0 +1,11 @@
+#!/bin/sh
+# sys-unmount-phone: Unmount Android device
+
+MOUNT_POINT="$HOME/media/phone"
+
+if mountpoint -q "$MOUNT_POINT"; then
+    fusermount -u "$MOUNT_POINT"
+    notify-send "Phone Unmounted"
+else
+    echo "Phone not mounted."
+fi

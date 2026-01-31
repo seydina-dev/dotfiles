@@ -1,9 +1,0 @@
-#! /bin/sh
-
-mounting(){
-	udisksctl mount -b /dev/$1
-	notify-send "$1 mounted successfully"
-}
-
-[ "$1" ]   && dev=$1 || dev=$(lsblk -l |sed -n '1,5!p'| dmenu -l 10 |cut -d' ' -f1)
-[ "$dev" ] && mounting "$dev" || exit

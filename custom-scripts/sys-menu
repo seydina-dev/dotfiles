@@ -1,0 +1,14 @@
+#!/bin/sh
+# sys-menu: Universal menu selector (fzf/wofi/dmenu)
+# Usage: list_generator | sys-menu "Prompt"
+
+PROMPT="${1:-Select:}"
+
+if [ -n "$WAYLAND_DISPLAY" ] && command -v wofi >/dev/null 2>&1; then
+    wofi --show dmenu --prompt "$PROMPT" --matching=fuzzy --width=40% --height=40%
+elif [ -n "$DISPLAY" ] && command -v dmenu >/dev/null 2>&1; then
+    dmenu -i -l 20 -p "$PROMPT"
+else
+    # Fallback to fzf for terminal/TUI
+    fzf --reverse --height 40% --prompt "$PROMPT "
+fi

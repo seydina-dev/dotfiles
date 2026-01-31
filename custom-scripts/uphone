@@ -1,4 +1,0 @@
-#! /bin/sh
-
-fusermount -u ~/media/phone
-notify-send "Phone unmounted."
