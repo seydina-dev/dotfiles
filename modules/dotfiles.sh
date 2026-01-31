@@ -5,49 +5,12 @@
 module_dotfiles() {
     log_step "Managing dotfiles and configurations"
 
-    # Create symbolic links
-    if ! create_symlinks_from_config; then
+    # Create symbolic links (only global category)
+    if ! create_symlinks_from_config "global"; then
         log_error "Failed to create symlinks"
         return 1
     fi
 
-    return 0
-}
-
-create_symlinks_from_config() {
-    log_step "Creating symbolic links"
-
-    local symlinks_file="$CONFIG_DIR/symlinks.conf"
-
-    if [[ ! -f "$symlinks_file" ]]; then
-        log_error "Symlinks config not found: $symlinks_file"
-        return 1
-    fi
-
-    local count=0
-    while IFS=: read -r source target description; do
-        # Skip comments and empty lines
-        [[ "$source" =~ ^#.* ]] || [[ -z "$source" ]] && continue
-
-        # Resolve source path relative to script directory
-        local full_source="$SCRIPT_DIR/$source"
-        local full_target="$target"
-
-        # Expand ~ in target path
-        full_target="${full_target/#\~/$HOME}"
-
-        if [[ -z "$description" ]]; then
-            description="Linking $source → $target"
-        fi
-
-        if create_symlink "$full_source" "$full_target" "$description"; then
-            ((count++))
-        else
-            log_warning "Failed to create symlink: $source → $target"
-        fi
-    done < "$symlinks_file"
-
-    log_success "Created $count symbolic links"
     return 0
 }
 
@@ -57,7 +20,12 @@ verify_symlinks() {
     local symlinks_file="$CONFIG_DIR/symlinks.conf"
     local broken_links=()
 
-    while IFS=: read -r source target description; do
+    if [[ ! -f "$symlinks_file" ]]; then
+        log_error "Symlinks config not found: $symlinks_file"
+        return 1
+    fi
+
+    while IFS=: read -r source target description category; do
         [[ "$source" =~ ^#.* ]] || [[ -z "$source" ]] && continue
 
         local full_target="${target/#\~/$HOME}"

@@ -15,8 +15,11 @@ module_hyprland() {
         return 1
     fi
 
-    # Setup configuration
-    setup_hyprland_config
+    # Setup configuration using the category filter
+    if ! create_symlinks_from_config "hyprland"; then
+        log_error "Failed to setup Hyprland configuration"
+        return 1
+    fi
 
     return 0
 }
@@ -33,19 +36,3 @@ install_hyprland_dependencies() {
         fi
     done
 }
-
-setup_hyprland_config() {
-    log_step "Setting up Hyprland configuration"
-
-    local hyprland_config_dir="$SCRIPT_DIR/hypr"
-    local target_config_dir="$HOME/.config/hypr"
-
-    if [[ ! -d "$hyprland_config_dir" ]]; then
-        log_warning "Hyprland config directory not found: $hyprland_config_dir"
-        return 1
-    fi
-
-    # Link Hyprland configuration
-    create_symlink "$hyprland_config_dir" "$target_config_dir" "Linking Hyprland configuration"
-}
-

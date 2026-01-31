@@ -135,7 +135,7 @@ remove_symlinks() {
         return 1
     fi
 
-    while IFS=: read -r source target description; do
+    while IFS=: read -r source target description category; do
         [[ "$source" =~ ^#.* ]] || [[ -z "$source" ]] && continue
 
         local full_target="${target/#\~/$HOME}"

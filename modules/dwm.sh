@@ -27,8 +27,17 @@ module_dwm() {
         install_dwm_fonts
     fi
 
-    # Setup configuration
-    setup_dwm_config
+    # Setup configuration using the category filter
+    if ! create_symlinks_from_config "dwm"; then
+        log_error "Failed to setup DWM configuration"
+        return 1
+    fi
+
+    # Ensure scripts are executable
+    local dwmscripts_dest="$HOME/.local/bin/dwmscripts"
+    if [[ -d "$dwmscripts_dest" ]] && ! $DRY_RUN; then
+        find "$dwmscripts_dest" -type f -exec chmod +x {} \;
+    fi
 
     return 0
 }
@@ -61,6 +70,10 @@ build_dwm() {
 
     # Build and install
     execute "cd '$build_dir' && sudo make clean install" "Building DWM"
+
+    if $DRY_RUN; then
+        return 0
+    fi
 
     if command -v dwm >/dev/null; then
         log_success "DWM installed successfully"
@@ -109,60 +122,5 @@ install_dwm_fonts() {
     # Update font cache
     if command -v fc-cache >/dev/null; then
         execute "fc-cache -fv" "Updating font cache"
-    fi
-}
-
-setup_dwm_config() {
-    log_step "Setting up DWM configuration"
-
-    local dwm_config_dir="$SCRIPT_DIR/dwm"
-    local target_config_dir="$HOME/.config/dwm"
-
-    if [[ ! -d "$dwm_config_dir" ]]; then
-        log_warning "DWM config directory not found: $dwm_config_dir"
-        return 1
-    fi
-
-    # Link DWM configuration
-    create_symlink "$dwm_config_dir" "$target_config_dir" "Linking DWM configuration"
-
-    # Link dwmscripts
-    local dwmscripts_src="$dwm_config_dir/dwmscripts"
-    local dwmscripts_dest="$HOME/.local/bin/dwmscripts"
-
-    if [[ -d "$dwmscripts_src" ]]; then
-        create_symlink "$dwmscripts_src" "$dwmscripts_dest" "Linking DWM scripts"
-
-        # Make scripts executable
-        if ! $DRY_RUN; then
-            find "$dwmscripts_src" -type f -exec chmod +x {} \;
-        fi
-    fi
-
-    # Link X11 configuration
-    if [[ -f "$dwm_config_dir/.xinitrc" ]]; then
-        create_symlink "$dwm_config_dir/.xinitrc" "$HOME/.xinitrc" "Linking Xinitrc"
-    fi
-
-    if [[ -f "$dwm_config_dir/.Xresources" ]]; then
-        create_symlink "$dwm_config_dir/.Xresources" "$HOME/.Xresources" "Linking Xresources"
-    fi
-}
-
-setup_dwm_autostart() {
-    log_step "Setting up DWM autostart"
-
-    local autostart_dir="$HOME/.dwm"
-
-    if confirm "Set up DWM autostart directory?"; then
-        execute "mkdir -p '$autostart_dir'" "Creating autostart directory"
-
-        local autostart_src="$SCRIPT_DIR/dwm/autostart-patch/autostart.sh"
-        local autostart_dest="$autostart_dir/autostart.sh"
-
-        if [[ -f "$autostart_src" ]]; then
-            create_symlink "$autostart_src" "$autostart_dest" "Linking autostart script"
-            execute "chmod +x '$autostart_dest'" "Making autostart executable"
-        fi
     fi
 }

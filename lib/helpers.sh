@@ -61,6 +61,10 @@ install_package() {
             ;;
     esac
 
+    if $DRY_RUN; then
+        return 0
+    fi
+
     if package_installed "$pkg"; then
         INSTALLED_PACKAGES["$pkg"]=1
         log_success "Installed: $pkg"
@@ -239,6 +243,52 @@ create_symlink() {
     execute "ln -sf '$source' '$target'" "Creating symlink: $source → $target"
 }
 
+
+# Create symbolic links from a configuration file
+# Supports filtering by category
+create_symlinks_from_config() {
+    local filter_category="${1:-global}"
+    local symlinks_file="$CONFIG_DIR/symlinks.conf"
+
+    if [[ ! -f "$symlinks_file" ]]; then
+        log_error "Symlinks config not found: $symlinks_file"
+        return 1
+    fi
+
+    log_step "Creating symbolic links (Category: $filter_category)"
+
+    local count=0
+    while IFS=: read -r source target description category; do
+        # Skip comments and empty lines
+        [[ "$source" =~ ^#.* ]] || [[ -z "$source" ]] && continue
+
+        # Apply category filter
+        category="${category:-global}"
+        if [[ "$category" != "$filter_category" ]]; then
+            continue
+        fi
+
+        # Resolve source path relative to script directory
+        local full_source="$SCRIPT_DIR/$source"
+        local full_target="$target"
+
+        # Expand ~ in target path
+        full_target="${full_target/#\~/$HOME}"
+
+        if [[ -z "$description" ]]; then
+            description="Linking $source → $target"
+        fi
+
+        if create_symlink "$full_source" "$full_target" "$description"; then
+            ((count++))
+        else
+            log_warning "Failed to create symlink: $source → $target"
+        fi
+    done < "$symlinks_file"
+
+    log_success "Created $count symbolic links for category: $filter_category"
+    return 0
+}
 
 # Load package list based on current OS
 # Format in file: [category]
