@@ -189,11 +189,64 @@ ex() {
     fi
 }
 
-# Git Global Config
 ggc() {
     local name email
     read -p "Enter your name: " name
     read -p "Enter your email: " email
     [ -n "$name" ] && git config --global user.name "$name"
     [ -n "$email" ] && git config --global user.email "$email"
+}
+
+gco() {
+    if ! command -v fzf >/dev/null 2>&1; then
+        echo "fzf is not installed."
+        return 1
+    fi
+    local branch
+    branch=$(git branch -a 2>/dev/null | grep -v HEAD | sed 's/.* //' | sed 's/remotes\///' | sort -u | fzf --reverse --border --height 40% --prompt="Checkout branch: ")
+    [ -z "$branch" ] && return
+    git checkout "$branch"
+}
+
+gbd() {
+    if ! command -v fzf >/dev/null 2>&1; then
+        echo "fzf is not installed."
+        return 1
+    fi
+    local branch
+    branch=$(git branch 2>/dev/null | grep -v '*' | sed 's/.* //' | fzf --reverse --border --height 40% --prompt="Delete branch: ")
+    [ -z "$branch" ] && return
+    git branch -d "$branch"
+}
+
+glg() {
+    if ! command -v fzf >/dev/null 2>&1; then
+        echo "fzf is not installed."
+        return 1
+    fi
+    git log --graph --oneline --all --color=always | fzf --reverse --border --height 60% --ansi --prompt="View commit: " --preview 'git show --color=always $(echo {} | sed "s/.* //")'
+}
+
+gsh() {
+    if ! command -v fzf >/dev/null 2>&1; then
+        echo "fzf is not installed."
+        return 1
+    fi
+    local stash
+    stash=$(git stash list 2>/dev/null | fzf --reverse --border --height 40% --prompt="Select stash: ")
+    [ -z "$stash" ] && return
+    local stash_num=$(echo "$stash" | cut -d: -f1 | sed 's/stash@{//' | sed 's/}//')
+    echo "$stash" | grep -q "show" && git stash show -p "stash@{$stash_num}" || git stash apply "stash@{$stash_num}"
+}
+
+grs() {
+    if ! command -v fzf >/dev/null 2>&1; then
+        echo "fzf is not installed."
+        return 1
+    fi
+    local file
+    file=$(git status --short 2>/dev/null | fzf --reverse --border --height 40% --prompt="Restore file: " --preview 'git diff --color=always $(echo {} | cut -c4-)')
+    [ -z "$file" ] && return
+    local filepath=$(echo "$file" | cut -c4-)
+    git restore "$filepath"
 }
