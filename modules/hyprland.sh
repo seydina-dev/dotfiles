@@ -21,6 +21,13 @@ module_hyprland() {
         return 1
     fi
 
+    # Ensure Waybar scripts are executable
+    local waybar_scripts="$HOME/.config/waybar/scripts"
+    if [[ -d "$waybar_scripts" ]] && ! $DRY_RUN; then
+        log_substep "Making Waybar scripts executable"
+        find "$waybar_scripts" -type f -name "*.sh" -exec chmod +x {} \;
+    fi
+
     return 0
 }
 

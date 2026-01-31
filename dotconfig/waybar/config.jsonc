@@ -1,0 +1,137 @@
+// -*- mode: jsonc -*-
+{
+    "layer": "top",
+    "position": "top",
+    "height": 36,
+    "spacing": 2,
+    "modules-left": [
+        "hyprland/workspaces",
+        "mpris",
+        "hyprland/window"
+    ],
+    "modules-center": [
+        "clock"
+    ],
+    "modules-right": [
+        "pulseaudio",
+        "bluetooth",
+        "network",
+        "cpu",
+        "memory",
+        "temperature",
+        "backlight",
+        "battery",
+        "tray"
+    ],
+    "hyprland/workspaces": {
+        "disable-scroll": true,
+        "all-outputs": true,
+        "on-click": "activate",
+        "format": "{name}",
+        "format-icons": {
+            "urgent": "",
+            "active": "",
+            "default": ""
+        },
+        "persistent-workspaces": {
+            "*": 5
+        }
+    },
+    "mpris": {
+        "format": "<span color='#bb9af7'>{player_icon}</span> {dynamic}",
+        "format-paused": "<span color='#bb9af7'>{status_icon}</span> <i>{dynamic}</i>",
+        "player-icons": {
+            "default": "▶",
+            "mpv": "🎵"
+        },
+        "status-icons": {
+            "paused": "⏸"
+        },
+        "max-length": 40
+    },
+    "hyprland/window": {
+        "format": "{}",
+        "separate-outputs": true,
+        "max-length": 50
+    },
+    "tray": {
+        "spacing": 10
+    },
+    "clock": {
+        "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>",
+        "format-alt": "{:%Y-%m-%d}",
+        "format": "<span color='#a9b1d6'></span> {:%H:%M}"
+    },
+    "cpu": {
+        "format": "<span color='#f7768e'></span> {usage}%",
+        "tooltip": false,
+        "on-click": "kitty -e btop"
+    },
+    "memory": {
+        "format": "<span color='#bb9af7'></span> {}%",
+        "on-click": "kitty -e btop"
+    },
+    "temperature": {
+        "critical-threshold": 80,
+        "format": "<span color='#e0af68'>{icon}</span> {temperatureC}°C",
+        "format-icons": ["", "", ""]
+    },
+    "backlight": {
+        "format": "<span color='#e0af68'>{icon}</span> {percent}%",
+        "format-icons": ["", "", "", "", "", "", "", "", ""],
+        "on-scroll-up": "brightnessctl set 1%+",
+        "on-scroll-down": "brightnessctl set 1%-"
+    },
+    "battery": {
+        "states": {
+            "warning": 30,
+            "critical": 15
+        },
+        "format": "<span color='#9ece6a'>{icon}</span> {capacity}%",
+        "format-full": "<span color='#9ece6a'>{icon}</span> {capacity}%",
+        "format-charging": "<span color='#9ece6a'></span> {capacity}%",
+        "format-plugged": "<span color='#9ece6a'></span> {capacity}%",
+        "format-alt": "<span color='#9ece6a'>{icon}</span> {time}",
+        "format-icons": ["", "", "", "", ""]
+    },
+    "network": {
+        "format-wifi": "<span color='#9ece6a'></span> {essid} ({signalStrength}%)",
+        "format-ethernet": "<span color='#9ece6a'></span> {ifname}",
+        "tooltip-format": "{ifname} via {gwaddr} ",
+        "format-linked": "{ifname} (No IP) ",
+        "format-disconnected": "<span color='#f7768e'>⚠</span> Disconnected",
+        "format-alt": "<span color='#9ece6a'></span> {ipaddr}/{cidr}",
+        "on-click": "nm-connection-editor"
+    },
+    "pulseaudio": {
+        "format": "<span color='#7aa2f7'>{icon}</span> {volume}% {format_source}",
+        "format-bluetooth": "<span color='#7aa2f7'>{icon}</span> {volume}% {format_source}",
+        "format-bluetooth-muted": "<span color='#f7768e'> {icon}</span> {format_source}",
+        "format-muted": "<span color='#f7768e'></span> {format_source}",
+        "format-source": "<span color='#7aa2f7'></span> {volume}%",
+        "format-source-muted": "<span color='#f7768e'></span>",
+        "format-icons": {
+            "headphone": "",
+            "hands-free": "",
+            "headset": "",
+            "phone": "",
+            "portable": "",
+            "car": "",
+            "default": ["", "", ""]
+        },
+        "on-click": "pavucontrol",
+        "on-scroll-up": "pactl set-sink-volume @DEFAULT_SINK@ +1%",
+        "on-scroll-down": "pactl set-sink-volume @DEFAULT_SINK@ -1%"
+    },
+    "bluetooth": {
+        "format": "<span color='#78a9ff'></span> {status}",
+        "format-connected": "<span color='#78a9ff'></span> {device_alias}",
+        "format-connected-battery": "<span color='#78a9ff'></span> {device_alias} {device_battery_percentage}%",
+        "tooltip-format": "{controller_alias}\t{controller_address}\n\n{num_connections} connected",
+        "tooltip-format-connected": "{controller_alias}\t{controller_address}\n\n{num_connections} connected\n\n{device_enumerate}",
+        "tooltip-format-enumerate-connected": "{device_alias}\t{device_address}",
+        "tooltip-format-enumerate-connected-battery": "{device_alias}\t{device_address}\t{device_battery_percentage}%",
+        "on-click": "overskride",
+        "on-click-right": "~/.config/waybar/scripts/bluetooth-toggle.sh"
+    }
+}
