@@ -1,58 +1,89 @@
-#!/usr/bin/sh
+#!/bin/sh
 
+# --- Navigation & Utilities ---
+alias c="clear"
+alias cl="clear"
+alias clr="clear"
+alias lr="clear"
+alias mc="micro"
+alias hx="helix"
+alias pls="sudo"
+alias del="rm -rf"
+alias copy="rsync --progress --ignore-existing -rhav"
+alias png="ping 8.8.8.8 -c 50"
+
+# Clipboard (using functions from functionrc)
+alias cin="_cin"
+alias cout="_cout"
+
+# Color support
 alias ip="ip --color=auto"
 alias grep="grep --color=auto"
-alias c=clear
-alias lr=clear
-alias cl=clear
-alias clr=clear
-alias nf=neofetch
-alias sf=screenfetch
-alias mc=micro
-alias hx=helix
-alias pn=pnpm
-alias px=pnpx
-alias sb="source ~/.bashrc"
-alias sz="source ~/.zshrc"
-alias eb="$EDITOR ~/.bashrc"
-alias ez="$EDITOR ~/.zshrc"
-alias al="$EDITOR ~/.aliasrc"
-alias fn="$EDITOR ~/.functionrc"
-alias pv="$EDITOR ~/.bashrc"
-alias mdata="sudo mount /dev/sdb2 media/Datas/"
-alias phone="simple-mtpfs -o default_permissions --device"
-# alias exp="cd ~/media/experiment"
-alias del="sudo rm -rf"
 
-# lsd
-if [ $(command -v lsd) ]; then
-	alias ls=lsd
-	alias la="lsd -a"
-	alias ll="lsd -lah"
-	alias tree="lsd --tree"
+# Directory shortcuts
+alias conf="cd $HOME/.config"
+alias lbin="cd $HOME/.local/bin"
+
+# Reload shell config
+alias sb="source $HOME/.bashrc"
+alias sz="source $HOME/.zshrc"
+
+# Editor shortcuts for config files
+alias eb="$EDITOR $HOME/.bashrc"
+alias ez="$EDITOR $HOME/.zshrc"
+alias al="$EDITOR $HOME/.aliasrc"
+alias fn="$EDITOR $HOME/.functionrc"
+alias pv="$EDITOR $HOME/.path_variablerc"
+
+# Modern replacements
+if command -v lsd >/dev/null 2>&1; then
+    alias ls="lsd"
+    alias la="lsd -a"
+    alias ll="lsd -lah"
+    alias tree="lsd --tree"
 else
-	alias ls="ls --color=auto"
-	alias la="ls -a"
-	alias ll="ls -lah"
+    alias ls="ls --color=auto"
+    alias la="ls -a"
+    alias ll="ls -lah"
 fi
 
-# bat
-[ $(command -v bat) ] && alias cat=bat
+if command -v bat >/dev/null 2>&1; then
+    alias cat="bat"
+elif command -v batcat >/dev/null 2>&1; then
+    alias cat="batcat"
+fi
 
-# youtube-dlp
-alias dlt="yt-dlp -P ~/media/Tuto"
-alias dlv="yt-dlp -P ~/media/Videos"
-alias dlm="yt-dlp -f 'bestvideo[height<=1080][ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best' -P ~/media/Tuto"
-# alias dlm="yt-dlp -f 'bestvideo[height<=1080][ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best' -P ~/media/Clip-Videos"
-
-alias stream="webtorrent --mpv"
-alias dlS="webtorrent -o ~/media/Series"
-
-# aria2p
-alias aria2penv="source $HOME/.virtualenv/aria2p\[tui\]/bin/activate"
-alias dlM="aria2c -s 16 -x 16 -d ~/media/Movies"
-alias dlS="aria2c -s 16 -x 16 -d ~/media/Series"
-alias dlmag="aria2c -d ~/media --enable-dht=true"
+# Package Manager Abstraction
+if command -v pacman >/dev/null 2>&1; then
+    alias pkg-i="sudo pacman -S"
+    alias pkg-r="sudo pacman -Rns"
+    alias pkg-u="sudo pacman -Syyu"
+    alias pkg-s="sudo pacman -Ss"
+    if command -v paru >/dev/null 2>&1; then
+        alias ys="paru -S"
+        alias yss="paru -Ss"
+        alias ysu="paru -Syu"
+    elif command -v yay >/dev/null 2>&1; then
+        alias ys="yay -S"
+        alias yss="yay -Ss"
+        alias ysu="yay -Syu"
+    fi
+elif command -v apt >/dev/null 2>&1; then
+    alias pkg-i="sudo apt install"
+    alias pkg-r="sudo apt remove"
+    alias pkg-u="sudo apt update && sudo apt upgrade"
+    alias pkg-s="apt search"
+elif command -v dnf >/dev/null 2>&1; then
+    alias pkg-i="sudo dnf install"
+    alias pkg-r="sudo dnf remove"
+    alias pkg-u="sudo dnf upgrade"
+    alias pkg-s="dnf search"
+elif command -v pkg >/dev/null 2>&1 && [ -d "/data/data/com.termux" ]; then
+    alias pkg-i="pkg install"
+    alias pkg-r="pkg uninstall"
+    alias pkg-u="pkg upgrade"
+    alias pkg-s="pkg search"
+fi
 
 # Git
 alias ga="git add"
@@ -62,56 +93,11 @@ alias gps="git push"
 alias gpl="git pull"
 alias gct="git commit -m"
 
-alias del="rm -rf"
-alias conf="cd ~/.config"
-alias lbin="cd ~/.local/bin"
-alias cin="xclip -selection c"
-alias cout="xclip -selection clipboard -o | tr -d '\n'"
-# alias hst="history|cut -c 8- |sort|uniq|fzf --reverse |tr -d '\n'|wl-copy"
-alias hst="history|cut -c 8- |sort|uniq|fzf --reverse |tr -d '\n'|cin"
-alias swifi="nmcli dev wifi rescan"
-alias connect="nmcli dev wifi connect"
-alias disconnect="nmcli con down"
+# Media
+alias dlt="yt-dlp -P $HOME/media/Tuto"
+alias dlv="yt-dlp -P $HOME/media/Videos"
 
-# systemd
-alias sysd="sudo systemctl"
-alias nsysd="sudo systemctl enable"
-alias ssysd="sudo systemctl start"
-alias rsysd="sudo systemctl restart"
-alias pls=sudo
-alias copy="rsync --progress --ignore-existing -rhav"
-alias png="ping 8.8.8.8 -c 50"
-
-
-# System info
-alias sysinfo_basic='uname -a'
-alias sysinfo_hard='lscpu'
-alias sysinfo_kernel='cat /proc/version'
-alias sysinfo_memory='free -h'
-
-# Package managers
-if [ $(command -v pacman) ]; then
-	# Pacman
-	alias pkg-i="sudo pacman -S"
-	alias pkg-r="sudo pacman -Rns"
-	alias pkg-u="sudo pacman -Syyu"
-	alias pkg-s="sudo pacman -Ss"
-	alias rmpaclock="sudo rm -R /var/lib/pacma/db.lck"
-	alias pac-refrech="pack --init && pack --populate && pac -Sy archlinux-keyring && pac -Su"
-	# yay
-	alias ys="yay -S"
-	alias yss="yay -Ss"
-	alias ysu="yay -Syu"
-	alias yq="yay -Qqe"
-	alias yr="yay -Rns"
-elif [ $(command -v apt) ]; then
-	alias pkg-i='sudo apt install'
-	alias pkg-r='sudo apt remove'
-	alias pkg-u='sudo apt update'
-	alias pkg-s='apt search'
-elif [ $(command -v dnf) ]; then
-	alias pkg-i='sudo dnf install'
-	alias pkg-r='sudo dnf remove'
-	alias pkg-u='sudo dnf update'
-	alias pkg-s='dnf search'
-fi
+# System Info
+alias sysinfo_memory="free -h"
+alias sysinfo_hard="lscpu"
+alias hst="history | cut -c 8- | sort | uniq | fzf --reverse | tr -d '\n' | _cin"

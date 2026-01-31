@@ -11,10 +11,10 @@ module_services() {
     fi
 
     local services=()
-    mapfile -t services < <(load_package_list "$OS" "services")
+    mapfile -t services < <(load_package_list "services")
 
     for service in "${services[@]}"; do
-        if [[ -n "$service" ]] && [[ ! "$service" =~ ^# ]]; then
+        if [[ -n "$service" ]]; then
             enable_service "$service"
         fi
     done

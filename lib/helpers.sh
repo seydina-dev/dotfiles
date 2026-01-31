@@ -42,10 +42,22 @@ install_package() {
 
     case $package_manager in
         pacman)
-            execute "paru -S --noconfirm '$pkg'" "Installing: $pkg"
+            if command -v paru >/dev/null; then
+                execute "paru -S --noconfirm '$pkg'" "Installing (AUR): $pkg"
+            elif command -v yay >/dev/null; then
+                execute "yay -S --noconfirm '$pkg'" "Installing (AUR): $pkg"
+            else
+                execute "sudo pacman -S --noconfirm '$pkg'" "Installing: $pkg"
+            fi
             ;;
         apt)
             execute "sudo apt install -y '$pkg'" "Installing: $pkg"
+            ;;
+        dnf)
+            execute "sudo dnf install -y '$pkg'" "Installing: $pkg"
+            ;;
+        pkg)
+            execute "pkg install -y '$pkg'" "Installing: $pkg"
             ;;
     esac
 
@@ -66,14 +78,16 @@ package_installed() {
 
     case $package_manager in
         pacman)
-            if command -v paru >/dev/null; then
-                paru -Qi "$pkg" >/dev/null 2>&1
-            else
-                pacman -Qi "$pkg" >/dev/null 2>&1
-            fi
+            pacman -Qi "$pkg" >/dev/null 2>&1
             ;;
         apt)
             dpkg -l "$pkg" 2>/dev/null | grep -q '^ii'
+            ;;
+        dnf)
+            rpm -q "$pkg" >/dev/null 2>&1
+            ;;
+        pkg)
+            pkg list-installed "$pkg" >/dev/null 2>&1
             ;;
         *)
             return 1
@@ -101,7 +115,12 @@ confirm() {
     fi
 
     while true; do
-        read -rp "$prompt" answer
+        if ! read -rp "$prompt" answer; then
+            echo -e "\n"
+            log_warning "Prompt interrupted. Aborting..."
+            exit 130
+        fi
+        
         case "${answer:-$default}" in
             [Yy]*|true) return 0 ;;
             [Nn]*|false) return 1 ;;
@@ -114,10 +133,14 @@ confirm() {
 detect_os() {
     if [[ -f /etc/arch-release ]]; then
         OS="arch"
+    elif [[ -f /etc/fedora-release ]]; then
+        OS="fedora"
     elif [[ -f /etc/debian_version ]]; then
         OS="debian"
     elif grep -q "Ubuntu" /etc/os-release 2>/dev/null; then
         OS="ubuntu"
+    elif [[ -d /data/data/com.termux ]]; then
+        OS="termux"
     else
         OS="unknown"
     fi
@@ -131,6 +154,8 @@ detect_package_manager() {
     case $OS in
         arch) echo "pacman" ;;
         debian|ubuntu) echo "apt" ;;
+        fedora) echo "dnf" ;;
+        termux) echo "pkg" ;;
         *) echo "unknown" ;;
     esac
 }
@@ -151,7 +176,15 @@ execute() {
         log_debug "Executing: $command"
     fi
 
-    eval "$command"
+    # Use eval for complex commands with pipes/redirects
+    local exit_code=0
+    eval "$command" || exit_code=$?
+
+    if [[ $exit_code -eq 130 ]]; then
+        exit 130
+    fi
+
+    return $exit_code
 }
 
 # Backup file if it exists
@@ -207,21 +240,32 @@ create_symlink() {
 }
 
 
+# Load package list based on current OS
+# Format in file: [category]
+# arch:fedora:debian:termux
 load_package_list() {
-    local os="$1"
-    local category="$2"
-    local config_file="$CONFIG_DIR/${os}-packages.conf"
+    local category="$1"
+    local config_file="$CONFIG_DIR/packages.conf"
+    local os_index=1
+
+    case "$OS" in
+        arch)   os_index=1 ;;
+        fedora) os_index=2 ;;
+        debian|ubuntu) os_index=3 ;;
+        termux) os_index=4 ;;
+    esac
 
     if [[ ! -f "$config_file" ]]; then
         log_error "Package config not found: $config_file"
         return 1
     fi
 
-    # Use a more robust awk script without regex escape issues
-    awk -v category="$category" '
-        BEGIN { found=0 }
-        $0 ~ "^\\[" category "\\]" { found=1; next }
-        found && /^\[/ { exit }
-        found && NF && !/^#/ { print $1 }
+    awk -v cat="[$category]" -v idx="$os_index" '
+        $0 == cat { found=1; next }
+        /^\[/ && found { found=0 }
+        found && NF && !/^#/ {
+            split($0, pkgs, ":")
+            if (pkgs[idx] != "") print pkgs[idx]
+        }
     ' "$config_file"
 }

@@ -6,7 +6,7 @@ set -eo pipefail
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly MODULES_DIR="$SCRIPT_DIR/modules"
 readonly LIB_DIR="$SCRIPT_DIR/lib"
-readonly CONFIG_DIR="$SCRIPT_DIR/config"
+readonly CONFIG_DIR="$SCRIPT_DIR/setup"
 readonly BACKUP_DIR="$HOME/.dotfiles.backup.$(date +%Y%m%d_%H%M%S)"
 
 # --- Source Core Libraries ---
@@ -100,17 +100,39 @@ parse_arguments() {
     done
 
     # Module selection logic
+    local available_modules=()
+    for m_file in "$MODULES_DIR"/*.sh; do
+        available_modules+=("$(basename "$m_file" .sh)")
+    done
+
     if [[ -n "$modules" ]]; then
         IFS=',' read -ra SELECTED_MODULES <<< "$modules"
     else
-        SELECTED_MODULES=("base" "dotfiles" "services" "scripts" "fonts" "dwm")
+        # Default modules to run (order matters)
+        SELECTED_MODULES=("base" "dotfiles" "services" "scripts" "fonts")
+        # Add DWM or Hyprland if they are available and not on Termux
+        if [[ "$OS" != "termux" ]]; then
+            [[ " ${available_modules[*]} " =~ " dwm " ]] && SELECTED_MODULES+=("dwm")
+            [[ " ${available_modules[*]} " =~ " hyprland " ]] && SELECTED_MODULES+=("hyprland")
+        fi
     fi
 
     if [[ -n "$skip" ]]; then
         IFS=',' read -ra SKIP_MODULES <<< "$skip"
-        for skip_module in "${SKIP_MODULES[@]}"; do
-            SELECTED_MODULES=("${SELECTED_MODULES[@]/$skip_module}")
+        local filtered_modules=()
+        for mod in "${SELECTED_MODULES[@]}"; do
+            local skip_it=false
+            for s_mod in "${SKIP_MODULES[@]}"; do
+                if [[ "$mod" == "$s_mod" ]]; then
+                    skip_it=true
+                    break
+                fi
+            done
+            if ! $skip_it; then
+                filtered_modules+=("$mod")
+            fi
         done
+        SELECTED_MODULES=("${filtered_modules[@]}")
     fi
 
     # Store show_logs in global if needed, or handle immediately
@@ -148,7 +170,7 @@ main() {
     show_log_info
 
     # Pre-flight checks
-    detect_os
+    OS=$(detect_os)
     check_dependencies
     setup_directories
 
@@ -200,23 +222,19 @@ execute_module() {
 
     local module_func="module_${module}"
     if declare -f "$module_func" > /dev/null; then
-        if $DRY_RUN; then
-            log_info "[DRY RUN] Would execute: $module_func"
-        else
-            if $FORCE || confirm "Run ${module} module?"; then
-                log_step "Starting ${module} module..."
-                if "$module_func"; then
-                    EXECUTED_STEPS+=("$module")
-                    log_success "Completed: $module"
-                else
-                    log_error "Failed: $module"
-                    if ! confirm "Continue despite failure?"; then
-                        exit 1
-                    fi
-                fi
+        if $FORCE || $DRY_RUN || confirm "Run ${module} module?"; then
+            log_step "Starting ${module} module..."
+            if "$module_func"; then
+                EXECUTED_STEPS+=("$module")
+                log_success "Completed: $module"
             else
-                log_info "Skipped: $module"
+                log_error "Failed: $module"
+                if [[ "$DRY_RUN" == false ]] && ! confirm "Continue despite failure?"; then
+                    exit 1
+                fi
             fi
+        else
+            log_info "Skipped: $module"
         fi
     else
         log_error "Module function not found: $module_func"
@@ -288,11 +306,23 @@ show_summary() {
 
 # --- Signal Handling ---
 cleanup() {
+    local exit_code=$?
+    if [[ $exit_code -ne 0 && $exit_code -ne 130 ]]; then
+        log_error "Setup interrupted or failed (Exit code: $exit_code)"
+    fi
+    
     log_debug "Cleaning up..."
-    # Add any cleanup tasks here
+    # Add any specific cleanup tasks here (e.g., removing temp files)
 }
 
-trap cleanup EXIT INT TERM
+handle_interrupt() {
+    echo -e "\n"
+    log_warning "Setup interrupted by user. Aborting..."
+    exit 130
+}
+
+trap cleanup EXIT
+trap handle_interrupt INT TERM
 
 # --- Entry Point ---
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then

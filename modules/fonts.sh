@@ -11,11 +11,11 @@ module_fonts() {
     fi
 
     local fonts=()
-    mapfile -t fonts < <(load_package_list "$OS" "fonts")
+    mapfile -t fonts < <(load_package_list "fonts")
 
     local installed_count=0
     for font in "${fonts[@]}"; do
-        if [[ -n "$font" ]] && [[ ! "$font" =~ ^# ]]; then
+        if [[ -n "$font" ]]; then
             if install_package "$font"; then
                 ((installed_count++))
             fi

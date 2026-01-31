@@ -37,10 +37,10 @@ install_dwm_dependencies() {
     log_step "Installing DWM dependencies"
 
     local packages=()
-    mapfile -t packages < <(load_package_list "$OS" "dwm")
+    mapfile -t packages < <(load_package_list "dwm")
 
     for pkg in "${packages[@]}"; do
-        if [[ -n "$pkg" ]] && [[ ! "$pkg" =~ ^# ]]; then
+        if [[ -n "$pkg" ]]; then
             install_package "$pkg"
         fi
     done
@@ -98,16 +98,18 @@ install_dwm_fonts() {
     log_step "Installing DWM fonts"
 
     local fonts=()
-    mapfile -t fonts < <(load_package_list "$OS" "fonts")
+    mapfile -t fonts < <(load_package_list "fonts")
 
     for font in "${fonts[@]}"; do
-        if [[ -n "$font" ]] && [[ ! "$font" =~ ^# ]]; then
+        if [[ -n "$font" ]]; then
             install_package "$font"
         fi
     done
 
     # Update font cache
-    execute "fc-cache -fv" "Updating font cache"
+    if command -v fc-cache >/dev/null; then
+        execute "fc-cache -fv" "Updating font cache"
+    fi
 }
 
 setup_dwm_config() {

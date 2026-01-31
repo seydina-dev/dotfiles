@@ -22,13 +22,13 @@ module_hyprland() {
 }
 
 install_hyprland_dependencies() {
-    log_step "Installing DWM dependencies"
+    log_step "Installing Hyprland dependencies"
 
     local packages=()
-    mapfile -t packages < <(load_package_list "$OS" "hyprland")
+    mapfile -t packages < <(load_package_list "hyprland")
 
     for pkg in "${packages[@]}"; do
-        if [[ -n "$pkg" ]] && [[ ! "$pkg" =~ ^# ]]; then
+        if [[ -n "$pkg" ]]; then
             install_package "$pkg"
         fi
     done
@@ -37,7 +37,7 @@ install_hyprland_dependencies() {
 setup_hyprland_config() {
     log_step "Setting up Hyprland configuration"
 
-    local hyprland_config_dir="$SCRIPT_DIR/hyprland"
+    local hyprland_config_dir="$SCRIPT_DIR/hypr"
     local target_config_dir="$HOME/.config/hypr"
 
     if [[ ! -d "$hyprland_config_dir" ]]; then
@@ -45,20 +45,7 @@ setup_hyprland_config() {
         return 1
     fi
 
-    # Link DWM configuration
+    # Link Hyprland configuration
     create_symlink "$hyprland_config_dir" "$target_config_dir" "Linking Hyprland configuration"
-
-    # Link dwmscripts
-    # local hyprland_scripts_src="$hyprland_config_dir/scripts"
-    # local hyprland_scripts_dest="$HOME/.local/bin/dwmscripts"
-
-    # if [[ -d "$dwmscripts_src" ]]; then
-    #     create_symlink "$dwmscripts_src" "$dwmscripts_dest" "Linking DWM scripts"
-
-    #     # Make scripts executable
-    #     if ! $DRY_RUN; then
-    #         find "$dwmscripts_src" -type f -exec chmod +x {} \;
-    #     fi
-    # fi
 }
 

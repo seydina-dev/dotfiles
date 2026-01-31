@@ -13,59 +13,18 @@ Personal Linux environment configuration with automated setup for window manager
 The setup is organized into modular components:
 
 ```
-├── .config/           # Application configs
+├── dotconfig/         # Application configs (target: ~/.config)
 │   ├── gtk-3.0/       # GTK3 settings
 │   ├── kitty/         # Terminal emulator
 │   ├── picom/         # Compositor
 │   ├── qt5ct/         # Qt5 settings
 │   ├── sxhkd/         # Hotkey daemon
 │   └── sxiv/          # Simple X Image Viewer
-├── custom-scripts/    # Custom utility scripts
-│   ├── ani
-│   ├── dad
-│   ├── elbin
-│   ├── ffcompress
-│   ├── findd
-│   ├── fzftest
-│   ├── leb
-│   ├── mdisk
-│   ├── mountdisk
-│   ├── mountjutsu
-│   ├── mountphone
-│   ├── move
-│   ├── mphone
-│   ├── notflix
-│   ├── play
-│   ├── record
-│   ├── rmcl
-│   ├── rmd
-│   ├── screen
-│   ├── screenManager
-│   ├── senflix
-│   ├── setbg
-│   ├── setwal
-│   ├── smci
-│   ├── udisk
-│   ├── umountphone
-│   ├── uphone
-│   └── vimv
-├── dwm/               # DWM window manager setup
-│   ├── .xinitrc
-│   ├── .Xresources
-│   ├── autostart-patch/
-│   ├── dwm-setup.sh
-│   └── dwmscripts/
-├── home/              # Home directory configurations
-│   ├── .bashrc
-│   ├── .vimrc
-│   ├── .zshrc
-│   ├── aliasrc
-│   ├── functionrc
-│   └── path_variablerc
-├── setup-scripts/     # Setup scripts
-│   ├── config.sh
-│   ├── packages.sh    # The packages repository
-│   └── utils.sh
+├── setup/             # Setup configuration
+│   ├── packages.conf  # Unified package list
+│   └── symlinks.conf  # Symlink definitions
+
+
 ├── README.md          # This file
 └── setup.sh           # Main setup script
 ```
@@ -112,11 +71,11 @@ cd ~/.dotfiles
 
 ### Manual Customization
 
-1. Edit `setup-scripts/config.sh` to modify:
+1. Edit `setup/packages.conf` to modify:
 
-   - Installation paths
    - Package selections
-   - Default applications
+   - Cross-distro names
+
 
 2. Environment variables in `home/path_variablerc`:
 

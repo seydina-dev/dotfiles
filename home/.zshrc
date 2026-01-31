@@ -5,13 +5,13 @@ fi
 # Path Variables
 # Path to your Oh My Zsh installation.
 export ZSH="$HOME/.oh-my-zsh"
-source ~/path_variablerc
+[[ -f "$HOME/.path_variablerc" ]] && source "$HOME/.path_variablerc"
 
 # Aliases
-source ~/aliasrc
+[[ -f "$HOME/.aliasrc" ]] && source "$HOME/.aliasrc"
 
 # Functions
-source ~/functionrc
+[[ -f "$HOME/.functionrc" ]] && source "$HOME/.functionrc"
 
 #plugins=( git zsh-syntax-highlighting zsh-autosuggestions fzf postgres tmux zsh-interactive-cd z)
 plugins=(git)

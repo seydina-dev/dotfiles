@@ -2,10 +2,10 @@
 [[ $- != *i* ]] && return
 
 # Path Variables
-source ~/.path_variablerc
+[[ -f "$HOME/.path_variablerc" ]] && source "$HOME/.path_variablerc"
 
-source ~/.aliasrc
-source ~/.functionrc
+[[ -f "$HOME/.aliasrc" ]] && source "$HOME/.aliasrc"
+[[ -f "$HOME/.functionrc" ]] && source "$HOME/.functionrc"
 
 PS1="[\u@\h \W]\$ "
 

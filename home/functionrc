@@ -1,97 +1,199 @@
 #!/bin/sh
 
+# --- Internal Helpers ---
+
+# Cross-platform clipboard copy
+_cin() {
+    if [ -n "$WAYLAND_DISPLAY" ] && command -v wl-copy >/dev/null 2>&1; then
+        wl-copy
+    elif [ -n "$DISPLAY" ] && command -v xclip >/dev/null 2>&1; then
+        xclip -selection clipboard
+    elif command -v termux-clipboard-set >/dev/null 2>&1; then
+        termux-clipboard-set
+    elif command -v pbcopy >/dev/null 2>&1; then
+        pbcopy
+    else
+        cat
+    fi
+}
+
+# Cross-platform clipboard paste
+_cout() {
+    if [ -n "$WAYLAND_DISPLAY" ] && command -v wl-paste >/dev/null 2>&1; then
+        wl-paste
+    elif [ -n "$DISPLAY" ] && command -v xclip >/dev/null 2>&1; then
+        xclip -selection clipboard -o
+    elif command -v termux-clipboard-get >/dev/null 2>&1; then
+        termux-clipboard-get
+    elif command -v pbpaste >/dev/null 2>&1; then
+        pbpaste
+    fi
+}
+
+# --- Functions ---
+
+# Extract magnet link ID
 fmag() {
-	echo ${1} | cut -d "&" -f1 | cin
+    [ -z "$1" ] && return
+    echo "$1" | cut -d "&" -f1 | _cin
 }
 
+# Interactive CD with FZF (filtered)
 cddd() {
-	rust_filters=".rustup|.cargo|debug"
-	node_filters=".npm"
-	git_filters=".git"
-	cache_filters=".cache"
+    if ! command -v fzf >/dev/null 2>&1; then
+        echo "fzf is not installed."
+        return 1
+    fi
 
-	FZF_OPTIONS="--reverse --border --height 40%"	
-	# cd "$(find $HOME/ -type d)"
-	cd "$(find $HOME/ -type d | grep -vE "${cache_filters}|${node_filters}|${rust_filters}|${git_filters}" y| fzf ${FZF_OPTIONS})"
+    local rust_filters=".rustup|.cargo|debug"
+    local node_filters="node_modules|.npm"
+    local git_filters=".git"
+    local cache_filters=".cache"
+    local FZF_OPTIONS="--reverse --border --height 40%"
 
+    local target
+    target=$(find "$HOME" -maxdepth 4 -type d 2>/dev/null | \
+        grep -vE "${cache_filters}|${node_filters}|${rust_filters}|${git_filters}" | \
+        fzf $FZF_OPTIONS)
+
+    [ -n "$target" ] && cd "$target" || return
 }
 
+# Fast interactive CD using fd and fzf
 cdd() {
-	cd $(fd --full-path $HOME --type d | fzf --reverse --border --height 40%)
+    if ! command -v fd >/dev/null 2>&1 || ! command -v fzf >/dev/null 2>&1; then
+        echo "fd or fzf is not installed."
+        return 1
+    fi
+
+    local target
+    target=$(fd --type d --hidden --exclude .git --max-depth 4 . "$HOME" | fzf --reverse --border --height 40%)
+    [ -n "$target" ] && cd "$target" || return
 }
 
-open() {
-	xdg-open "$(find -type f | fzf)" 	
+# Interactive file opener
+open_fzf() {
+    if ! command -v fzf >/dev/null 2>&1; then
+        echo "fzf is not installed."
+        return 1
+    fi
+
+    local file
+    file=$(find . -maxdepth 3 -type f 2>/dev/null | fzf)
+    if [ -n "$file" ]; then
+        if command -v xdg-open >/dev/null 2>&1; then
+            xdg-open "$file"
+        elif command -v open >/dev/null 2>&1; then
+            open "$file"
+        else
+            echo "No opener (xdg-open/open) found."
+        fi
+    fi
 }
 
-ssid(){
-	nmcli dev wifi|cut -b 9- |sed -n '1!p'| fzf --reverse |awk '{print $2}'|tr -d '\n'|xclip -selection c
+# Interactive WiFi selection (Arch/Debian/Fedora with nmcli)
+ssid() {
+    if ! command -v nmcli >/dev/null 2>&1 || ! command -v fzf >/dev/null 2>&1; then
+        echo "nmcli or fzf is not installed."
+        return 1
+    fi
+
+    nmcli -t -f SSID dev wifi | grep -v '^--' | sort -u | fzf --reverse --prompt="Select WiFi: " | tr -d '\n' | _cin
 }
 
- 
-ghc(){
-	gc "git@github.com:${1}/${2}.git"
+# Git shortcuts
+ghc() {
+    [ -z "$1" ] || [ -z "$2" ] && echo "Usage: ghc <user> <repo>" && return
+    git clone "git@github.com:${1}/${2}.git"
 }
 
-glc(){
-	gc "git@gitlab.com:${1}/${2}.git"
+glc() {
+    [ -z "$1" ] || [ -z "$2" ] && echo "Usage: glc <user> <repo>" && return
+    git clone "git@gitlab.com:${1}/${2}.git"
 }
 
 git-ssh() {
-	git remote set-url origin git@github.com:sedev077/${1}.git
+    local remote_url
+    remote_url=$(git remote get-url origin 2>/dev/null)
+    if [ -z "$remote_url" ]; then
+        echo "Not a git repository or no origin found."
+        return 1
+    fi
+
+    # Try to detect username from current URL or use global config
+    local user="${1:-$(git config user.name)}"
+    if [ -z "$user" ]; then
+        echo "Usage: git-ssh [username]"
+        return 1
+    fi
+
+    local repo
+    repo=$(basename "$(git rev-parse --show-toplevel 2>/dev/null)")
+    git remote set-url origin "git@github.com:${user}/${repo}.git"
+    echo "Remote set to: git@github.com:${user}/${repo}.git"
 }
 
-mcopy(){
-	
-	copy $(ls | fzf --reverse -m --prompt='files to copy: ') $1
-	#awk '{print "\047" $0 "\047"}' files > fcopy
-	#rsync --progress --ignore-existing -rhav
+# Interactive Multi-Copy
+mcopy() {
+    if ! command -v fzf >/dev/null 2>&1; then
+        echo "fzf is not installed."
+        return 1
+    fi
 
+    local target_dir="$1"
+    [ -z "$target_dir" ] && echo "Usage: mcopy <target_dir>" && return
+
+    local files
+    files=$(ls -A | fzf --reverse -m --prompt='Select files to copy: ')
+    [ -z "$files" ] && return
+
+    echo "$files" | xargs -I {} cp -rv "{}" "$target_dir"
 }
 
-mdel(){
-    for f in "$(ls -a|sort|sed -n '1,2!p'|fzf --reverse -m)"
-    do
-        printf "$f\n" >> f
-    done
+# Interactive Multi-Delete
+mdel() {
+    if ! command -v fzf >/dev/null 2>&1; then
+        echo "fzf is not installed."
+        return 1
+    fi
 
-    while read -r line; do
-        rm -rf "$line"
-    done < f
-    rm f
-}
+    local files
+    files=$(ls -A | fzf --reverse -m --prompt='Select files to DELETE: ')
+    [ -z "$files" ] && return
 
-# # ex - archive extractor
-# # usage: ex <file>
-
-ex(){
-  if [ -f $1 ] ; then
-    case $1 in
-      *.tar.bz2)   tar xjf $1   ;;
-      *.tar.gz)    tar xzf $1   ;;
-      *.bz2)       bunzip2 $1   ;;
-      *.rar)       unrar x $1   ;;
-      *.gz)        gunzip $1    ;;
-      *.tar)       tar xf $1    ;;
-      *.tbz2)      tar xjf $1   ;;
-      *.tgz)       tar xzf $1   ;;
-      *.zip)       unzip $1     ;;
-      *.Z)         uncompress $1;;
-      *.7z)        7z x $1      ;;
-      *)           echo "$1 cannot be extracted via ex()" ;;
+    echo "$files"
+    read -p "Are you sure you want to delete these files? [y/N] " confirm
+    case "$confirm" in
+        [Yy]*) echo "$files" | xargs -I {} rm -rf "{}" ;;
+        *) echo "Aborted." ;;
     esac
-  else
-    echo "${1} is not a valid file"
-  fi
 }
 
-setres() {
-	xrandr --output LVDS-1 --scale "1.4055x1.4062"
+# Universal Archive Extractor
+ex() {
+    if [ -f "$1" ]; then
+        case "$1" in
+            *.tar.bz2|*.tbz2) tar xjf "$1" ;;
+            *.tar.gz|*.tgz)   tar xzf "$1" ;;
+            *.bz2)            bunzip2 "$1" ;;
+            *.rar)            unrar x "$1" ;;
+            *.gz)             gunzip "$1" ;;
+            *.tar)            tar xf "$1" ;;
+            *.zip)            unzip "$1" ;;
+            *.Z)              uncompress "$1" ;;
+            *.7z)             7z x "$1" ;;
+            *)                echo "'$1' cannot be extracted via ex()" ;;
+        esac
+    else
+        echo "'$1' is not a valid file"
+    fi
 }
 
-ggc(){
-  read -p "Enter your name: " name
-  read -p "Enter your email: " email
-	git config --global user.name "$name"
-	git config --global user.email "$email"
+# Git Global Config
+ggc() {
+    local name email
+    read -p "Enter your name: " name
+    read -p "Enter your email: " email
+    [ -n "$name" ] && git config --global user.name "$name"
+    [ -n "$email" ] && git config --global user.email "$email"
 }
