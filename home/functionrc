@@ -250,3 +250,74 @@ grs() {
     local filepath=$(echo "$file" | cut -c4-)
     git restore "$filepath"
 }
+
+ssh-perm() {
+    echo "Setting secure permissions for SSH files..."
+
+    # Create .ssh directory if it doesn't exist
+    if [ ! -d ~/.ssh ]; then
+        mkdir -p ~/.ssh
+        echo "Created ~/.ssh directory"
+    fi
+
+    # Fix home directory permissions if too open
+    if [ -d ~ ]; then
+        homedir_perm=$(stat -c "%a" ~)
+        if [ "$homedir_perm" -gt 711 ]; then
+            echo "Fixing home directory permissions (was $homedir_perm)"
+            chmod 700 ~
+        fi
+    fi
+
+    # Set .ssh directory permissions
+    chmod 700 ~/.ssh
+
+    # Fix private keys (all files without .pub extension)
+    find ~/.ssh -type f -not -name "*.pub" -exec chmod 600 {} \; 2>/dev/null
+
+    # Fix public keys
+    find ~/.ssh -type f -name "*.pub" -exec chmod 644 {} \; 2>/dev/null
+
+    # Fix specific common files
+    [ -f ~/.ssh/known_hosts ] && chmod 644 ~/.ssh/known_hosts
+    [ -f ~/.ssh/config ] && chmod 644 ~/.ssh/config
+    [ -f ~/.ssh/authorized_keys ] && chmod 600 ~/.ssh/authorized_keys
+
+    # Fix any directory inside .ssh (like those used by some tools)
+    find ~/.ssh -type d -exec chmod 700 {} \; 2>/dev/null
+
+    echo "SSH permissions secured!"
+    echo "Current permissions:"
+    ls -la ~/.ssh/
+}
+
+android-perm() {
+    echo "Setting secure permissions for Android ADB files..."
+
+    # Check if .android directory exists
+    if [ ! -d ~/.android ]; then
+        echo "~/.android directory not found. Creating it..."
+        mkdir -p ~/.android
+    fi
+
+    # Set .android directory permissions
+    chmod 700 ~/.android
+
+    # Fix adbkey files (private and public)
+    [ -f ~/.android/adbkey ] && chmod 600 ~/.android/adbkey
+    [ -f ~/.android/adbkey.pub ] && chmod 644 ~/.android/adbkey.pub
+
+    # Fix other common Android files
+    [ -f ~/.android/debug.keystore ] && chmod 600 ~/.android/debug.keystore
+
+    # Fix all other files in .android to be secure
+    find ~/.android -type f -exec chmod 600 {} \; 2>/dev/null
+
+    # Allow read for certain files that might need it
+    [ -f ~/.android/adbkey.pub ] && chmod 644 ~/.android/adbkey.pub
+    [ -f ~/.android/repos.cnf ] && chmod 644 ~/.android/repos.cnf 2>/dev/null
+
+    echo "Android ADB permissions secured!"
+    echo "Current permissions:"
+    ls -la ~/.android/ 2>/dev/null || echo "~/.android directory is empty"
+}

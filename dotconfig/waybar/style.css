@@ -1,7 +1,7 @@
 * {
     border: none;
     border-radius: 0;
-    font-family: "JetBrainsMono Nerd Font", "JoyPixels", "Font Awesome 6 Free", sans-serif;
+    font-family: "JetBrainsMono Nerd Font", "Font Awesome 6 Free", sans-serif;
     font-size: 15px;
     min-height: 0;
 }
@@ -109,14 +109,14 @@ window#waybar {
     margin-right: 8px;
 }
 
-#battery.critical:not(.charging) {
-    color: #f7768e;
-    animation-name: blink;
-    animation-duration: 0.5s;
-    animation-timing-function: linear;
-    animation-iteration-count: infinite;
-    animation-direction: alternate;
-}
+/* #battery.critical:not(.charging) { */
+    /* color: #f7768e; */
+    /* animation-name: blink; */
+    /* animation-duration: 0.5s; */
+    /* animation-timing-function: linear; */
+    /* animation-iteration-count: infinite; */
+    /* animation-direction: alternate; */
+/* } */
 
 @keyframes blink {
     to {
