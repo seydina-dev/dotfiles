@@ -1,70 +1,70 @@
-#!/bin/bash
-set -x
-# Define the path
-wallpaper_path="$HOME/Pictures/wallpapers/Dynamic-Wallpapers"
-hypr_config_path="$HOME/.config/hypr"
+# This script toggles the entire system between Dark and Light modes.
+# It updates configurations for Waybar, Wofi, Mako, Kitty, Helix, and GTK.
+# It also attempts to find a matching wallpaper in ~/Pictures/wallpapers.
 
-# Define the GTK themes for light and dark modes
-# Catppuccin
-light_gtk_theme="Catppuccin-Latte-Standard-Mauve-light"
-dark_gtk_theme="Catppuccin-Mocha-Standard-Mauve-dark"
-light_icon_theme="Shiny-Light-Icons"
-dark_icon_theme="Shiny-Dark-Icons"
+# Configuration paths
+HYPR_SCRIPTS="$HOME/.config/hypr/scripts"
+WOFI_DIR="$HOME/.config/wofi"
+WAYBAR_DIR="$HOME/.config/waybar"
+MAKO_DIR="$HOME/.config/mako"
+KITTY_DIR="$HOME/.config/kitty"
+HELIX_CONFIG="$HOME/.config/helix/config.toml"
 
-# Mac-OS Like
-#light_gtk_theme="Mojave-Light"
-#dark_gtk_theme="Mojave-Dark"
-#light_icon_theme="McMojave-circle"
-#dark_icon_theme="McMojave-circle-dark"
+# Determine current mode
+if [ ! -f ~/.wallpaper_mode ]; then
+    echo "dark" > ~/.wallpaper_mode
+fi
 
-pkill swaybg
+CURRENT_MODE=$(cat ~/.wallpaper_mode)
 
-# Initialize swww if needed
-swww query || swww init
-
-# Set swww options
-swww="swww img"
-effect="--transition-bezier .43,1.19,1,.4 --transition-fps 60 --transition-type grow --transition-pos 0.925,0.977 --transition-duration 2"
-
-# Define functions for notifying user and updating symlinks
-notify_user() {
-	notify-send -h string:x-canonical-private-synchronous:sys-notify -u normal "Switching to $1 mode"
-}
-
-# Determine the current wallpaper mode by checking a configuration file
-if [ "$(cat ~/.wallpaper_mode)" = "light" ]; then
-  current_mode="light"
-  next_mode="dark"
+if [ "$CURRENT_MODE" = "light" ]; then
+    NEXT_MODE="dark"
+    GTK_THEME="Catppuccin-Mocha-Standard-Mauve-dark"
+    ICON_THEME="Shiny-Dark-Icons"
+    HELIX_THEME="tokyonight"
 else
-  current_mode="dark"
-  next_mode="light"
-fi
-path_param=$(echo $next_mode | sed 's/.*/\u&/')
-
-notify_user "$next_mode"
-ln -sf "${hypr_config_path}/waybar/style/style-${next_mode}.css" "${hypr_config_path}/waybar/style.css"
-ln -sf "${hypr_config_path}/mako/styles/config-${next_mode}" "${hypr_config_path}/mako/config"
-ln -sf "${hypr_config_path}/wofi/styles/style-${next_mode}.css" "${hypr_config_path}/wofi/style.css"
-
-gtk_theme="${next_mode}_gtk_theme"
-icon_theme="${next_mode}_icon_theme"
-
-gsettings set org.gnome.desktop.interface gtk-theme "${!gtk_theme}"
-gsettings set org.gnome.desktop.interface icon-theme "${!icon_theme}"
-
-# Find the next wallpaper if one exists
-current_wallpaper="$(cat ~/.current_wallpaper)"
-next_wallpaper="${current_wallpaper/_"$current_mode"/_"$next_mode"}"
-
-if ! [ -f "$next_wallpaper" ]; then
-  next_wallpaper="$(find "${wallpaper_path/"${path_param}"}" -type f -iname "*_"${next_mode}".jpg" -print0 | shuf -n1 -z | xargs -0)"
+    NEXT_MODE="light"
+    GTK_THEME="Catppuccin-Latte-Standard-Mauve-light"
+    ICON_THEME="Shiny-Light-Icons"
+    HELIX_THEME="tokyonight_day"
 fi
 
-$swww "${next_wallpaper}" $effect
+# 1. Update Symlinks (The core of the theme system)
+# We swap the active 'style.css' or 'config' with the mode-specific version
+ln -sf "${WOFI_DIR}/styles/style-${NEXT_MODE}.css" "${WOFI_DIR}/style.css"
+ln -sf "${WAYBAR_DIR}/styles/style-${NEXT_MODE}.css" "${WAYBAR_DIR}/style.css"
+ln -sf "${MAKO_DIR}/styles/config-${NEXT_MODE}" "${MAKO_DIR}/config"
+ln -sf "${KITTY_DIR}/themes/${NEXT_MODE}.conf" "${KITTY_DIR}/current-theme.conf"
 
-# Update the configuration file to reflect the new wallpaper mode and current wallpaper
-echo "$next_mode" > ~/.wallpaper_mode
-echo "$next_wallpaper" > ~/.current_wallpaper
+# 2. GTK / Icons (Tells desktop apps like Thunar or Settings to change)
+gsettings set org.gnome.desktop.interface gtk-theme "$GTK_THEME"
+gsettings set org.gnome.desktop.interface icon-theme "$ICON_THEME"
+gsettings set org.gnome.desktop.interface color-scheme "prefer-${NEXT_MODE}"
 
-sleep 2
-exec ~/.config/hypr/scripts/Startup.sh &
+# 3. Helix Theme (Uses sed to edit the config file directly)
+sed -i "s/theme = \".*\"/theme = \"$HELIX_THEME\"/" "$HELIX_CONFIG"
+
+# 4. Notify
+notify-send -h string:x-canonical-private-synchronous:sys-notify "System Theme" "Switching to ${NEXT_MODE} mode"
+
+# 5. Reload Apps
+# Reload Waybar and Mako
+killall waybar mako
+${HYPR_SCRIPTS}/Waybar.sh &
+${HYPR_SCRIPTS}/Mako.sh &
+
+# Reload Kitty (send signal to all running kitty instances to reload config)
+killall -USR1 kitty
+
+# 6. Wallpaper (Optional/Dynamic)
+WALLPAPER_PATH="$HOME/Pictures/wallpapers"
+if [ -d "$WALLPAPER_PATH" ]; then
+    NEXT_WALL=$(find "$WALLPAPER_PATH" -type f \( -iname "*${NEXT_MODE}*" \) | shuf -n1)
+    if [ -n "$NEXT_WALL" ]; then
+        swww img "$NEXT_WALL" --transition-type grow --transition-pos "$(hyprctl cursorpos | sed 's/,//' || echo "0,0")" --transition-duration 2
+        echo "$NEXT_WALL" > ~/.current_wallpaper
+    fi
+fi
+
+# Save state
+echo "$NEXT_MODE" > ~/.wallpaper_mode

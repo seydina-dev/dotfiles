@@ -1,0 +1,39 @@
+## Mako Configuration (Light)
+## Inspired by Tokyo Night Light theme
+
+font=JetBrainsMono Nerd Font 10
+width=350
+height=150
+margin=15
+padding=15
+border-size=2
+border-radius=10
+icons=1
+max-icon-size=48
+history=1
+sort=-time
+default-timeout=5000
+layer=overlay
+anchor=top-right
+format=<b>%s</b>\n%b
+
+# Colors (Light Mode)
+background-color=#e1e2e7e6
+text-color=#3760bf
+border-color=#385daa
+progress-color=over #b4b5b9
+
+[urgency=low]
+border-color=#b4b5b9
+default-timeout=2000
+
+[urgency=normal]
+border-color=#385daa
+
+[urgency=high]
+border-color=#f7768e
+default-timeout=0
+
+[category=mpd]
+default-timeout=2000
+group-by=category
