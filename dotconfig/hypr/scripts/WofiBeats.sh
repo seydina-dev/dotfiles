@@ -1,10 +1,10 @@
 #!/bin/bash
 
 ## Files
-CONFIG="$HOME/.config/hypr/wofi/WofiBig/config"
-STYLE="$HOME/.config/hypr/wofi/style.css"
-COLORS="$HOME/.config/hypr/wofi/colors"
-iDIR="$HOME/.config/hypr/mako/icons"
+CONFIG="$HOME/.config/wofi/WofiBig/config"
+STYLE="$HOME/.config/wofi/style.css"
+COLORS="$HOME/.config/wofi/colors"
+iDIR="$HOME/.config/mako/icons"
 
 
 # wofi window config (in %)
