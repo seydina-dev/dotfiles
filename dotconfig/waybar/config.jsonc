@@ -95,13 +95,14 @@
         "format-icons": ["", "", "", "", ""]
     },
     "network": {
-        "format-wifi": "<span color='#9ece6a'></span> {essid} ({signalStrength}%)",
-        "format-ethernet": "<span color='#9ece6a'></span> {ifname}",
+        "format-wifi": "<span color='#9ece6a'></span> {essid} ({signalStrength}%) {bandwidthTotalBytes}",
+        "format-ethernet": "<span color='#9ece6a'></span> {ifname} {bandwidthTotalBytes}",
         "tooltip-format": "{ifname} via {gwaddr} ",
         "format-linked": "{ifname} (No IP) ",
         "format-disconnected": "<span color='#f7768e'>⚠</span> Disconnected",
-        "format-alt": "<span color='#9ece6a'></span> {ipaddr}/{cidr}",
-        "on-click": "nm-connection-editor"
+        "format-alt": "<span color='#9ece6a'></span> {ipaddr}/{cidr} {bandwidthTotalBytes}",
+        "on-click": "nm-connection-editor",
+        "interval": 1
     },
     "pulseaudio": {
         "format": "<span color='#7aa2f7'>{icon}</span> {volume}% {format_source}",
