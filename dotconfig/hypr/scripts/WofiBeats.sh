@@ -3,7 +3,6 @@
 ## Files
 CONFIG="$HOME/.config/wofi/WofiBig/config"
 STYLE="$HOME/.config/wofi/style.css"
-COLORS="$HOME/.config/wofi/colors"
 iDIR="$HOME/.config/mako/icons"
 
 
@@ -14,7 +13,7 @@ HEIGHT=40
 ## Wofi Command
 wofi_command="wofi --show dmenu \
 			--prompt choose...
-			--conf $CONFIG --style $STYLE --color $COLORS \
+			--conf $CONFIG --style $STYLE \
 			--width=$WIDTH% --height=$HEIGHT% \
 			--cache-file=/dev/null \
 			--hide-scroll --no-actions \

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # WALLPAPERS PATH
-DIR=$HOME/Pictures/wallpapers
+DIR=$HOME/Pictures/Wallpapers
 
 # Transition config (type swww img --help for more settings
 FPS=30
@@ -21,9 +21,8 @@ RANDOM_PIC=${PICS[ $RANDOM % ${#PICS[@]} ]}
 RANDOM_PIC_NAME="${#PICS[@]}. random"
 
 # WOFI STYLES
-CONFIG="$HOME/.config/hypr/wofi/WofiBig/config"
-STYLE="$HOME/.config/hypr/wofi/style.css"
-COLORS="$HOME/.config/hypr/wofi/colors"
+CONFIG="$HOME/.config/wofi/WofiBig/config"
+STYLE="$HOME/.config/wofi/style.css"
 
 # to check if swaybg is running
 if [[ $(pidof swaybg) ]]; then
@@ -33,7 +32,7 @@ fi
 ## Wofi Command
 wofi_command="wofi --show dmenu \
 			--prompt choose...
-			--conf $CONFIG --style $STYLE --color $COLORS \
+			--conf $CONFIG --style $STYLE \
 			--width=$WIDTH% --height=$HEIGHT% \
 			--cache-file=/dev/null \
 			--hide-scroll --no-actions \
@@ -66,7 +65,7 @@ main() {
         swww img ${DIR}/${RANDOM_PIC} $SWWW_PARAMS
         return
     fi
-    
+
     pic_index=$(echo $choice | cut -d. -f1)
     swww img ${DIR}/${PICS[$pic_index]} $SWWW_PARAMS
 }
@@ -79,7 +78,7 @@ else
     main
 fi
 
-# Uncomment to launch something if a choice was made 
+# Uncomment to launch something if a choice was made
 # if [[ -n "$choice" ]]; then
     # Restart Waybar
 # fi
