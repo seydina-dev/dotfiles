@@ -23,3 +23,6 @@ plugins=(git)
 #source /usr/share/nvm/init-nvm.sh
 
 eval "$(starship init zsh)"
+
+# Added by dotfiles setup
+export PATH="/home/amiral/.local/bin:$PATH"

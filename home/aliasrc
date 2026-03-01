@@ -12,6 +12,8 @@ alias del="rm -rf"
 alias copy="rsync --progress --ignore-existing -rhav"
 alias png="ping 8.8.8.8 -c 50"
 
+alias mount-1to="sudo mount -t ntfs-3g -o uid=$(id -u),gid=$(id -g),umask=022 UUID=01D87F495AD99A20 $HOME/media/1to/"
+
 # Clipboard (using functions from functionrc)
 alias cin="_cin"
 alias cout="_cout"
@@ -36,11 +38,11 @@ alias fn="$EDITOR $HOME/.functionrc"
 alias pv="$EDITOR $HOME/.path_variablerc"
 
 # Modern replacements
-if command -v lsd >/dev/null 2>&1; then
-    alias ls="lsd"
-    alias la="lsd -a"
-    alias ll="lsd -lah"
-    alias tree="lsd --tree"
+if command -v eza>/dev/null 2>&1; then
+    alias ls="eza"
+    alias la="eza -a"
+    alias ll="eza -lah"
+    alias tree="eza --tree -L 4 --git-ignore --sort type"
 else
     alias ls="ls --color=auto"
     alias la="ls -a"
