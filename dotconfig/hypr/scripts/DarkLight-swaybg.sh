@@ -33,7 +33,7 @@ fi
 path_param=$(echo $next_mode | sed 's/.*/\u&/')
 
 notify_user "$next_mode"
-ln -sf "${hypr_config_path}/waybar/style/style-${next_mode}.css" "${hypr_config_path}/waybar/style.css"
+ln -sf "$HOME/.config/waybar/styles/style-${next_mode}.css" "$HOME/.config/waybar/style.css"
 ln -sf "$HOME/.config/mako/styles/config-${next_mode}" "$HOME/.config/mako/config"
 ln -sf "$HOME/.config/wofi/styles/style-${next_mode}.css" "$HOME/.config/wofi/style.css"
 
