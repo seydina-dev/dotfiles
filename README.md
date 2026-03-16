@@ -46,10 +46,12 @@ cd ~/.dotfiles
 
 2. Basic system setup:
 
-````bash
+```bash
 ./setup.sh
+```
 
 3. (Optional) Install window manager modules:
+
 
 ```bash
 ./setup.sh -m hyprland    # Install Hyprland
