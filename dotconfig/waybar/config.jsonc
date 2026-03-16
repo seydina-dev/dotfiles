@@ -14,7 +14,6 @@
     ],
     "modules-right": [
         "pulseaudio",
-        "bluetooth",
         "network",
         "cpu",
         "memory",
@@ -38,8 +37,8 @@
         }
     },
     "mpris": {
-        "format": "<span color='#bb9af7'>{player_icon}</span> {dynamic}",
-        "format-paused": "<span color='#bb9af7'>{status_icon}</span> <i>{dynamic}</i>",
+        "format": "{dynamic} <span color='#bb9af7'>{player_icon}</span>",
+        "format-paused": "<i>{dynamic}</i> <span color='#bb9af7'>{status_icon}</span>",
         "player-icons": {
             "default": "▶",
             "mpv": "🎵"
@@ -60,24 +59,24 @@
     "clock": {
         "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>",
         "format-alt": "{:%Y-%m-%d}",
-        "format": "<span color='#a9b1d6'></span> {:%H:%M}"
+        "format": "{:%H:%M} <span color='#a9b1d6'></span>"
     },
     "cpu": {
-        "format": "<span color='#f7768e'></span> {usage}%",
+        "format": "{usage}% <span color='#f7768e'></span>",
         "tooltip": false,
         "on-click": "kitty -e btop"
     },
     "memory": {
-        "format": "<span color='#bb9af7'></span> {}%",
+        "format": "{}% <span color='#bb9af7'></span>",
         "on-click": "kitty -e btop"
     },
     "temperature": {
         "critical-threshold": 80,
-        "format": "<span color='#e0af68'>{icon}</span> {temperatureC}°C",
+        "format": "{temperatureC}°C <span color='#e0af68'>{icon}</span>",
         "format-icons": ["", "", ""]
     },
     "backlight": {
-        "format": "<span color='#e0af68'>{icon}</span> {percent}%",
+        "format": "{percent}% <span color='#e0af68'>{icon}</span>",
         "format-icons": ["", "", "", "", "", "", "", "", ""],
         "on-scroll-up": "brightnessctl set 1%+",
         "on-scroll-down": "brightnessctl set 1%-"
@@ -87,30 +86,30 @@
             "warning": 30,
             "critical": 15
         },
-        "format": "<span color='#9ece6a'>{icon}</span> {capacity}%",
-        "format-full": "<span color='#9ece6a'>{icon}</span> {capacity}%",
-        "format-charging": "<span color='#9ece6a'></span> {capacity}%",
-        "format-plugged": "<span color='#9ece6a'></span> {capacity}%",
-        "format-alt": "<span color='#9ece6a'>{icon}</span> {time}",
+        "format": "{capacity}% <span color='#9ece6a'>{icon}</span>",
+        "format-full": "{capacity}% <span color='#9ece6a'>{icon}</span>",
+        "format-charging": "{capacity}% <span color='#9ece6a'></span>",
+        "format-plugged": "{capacity}% <span color='#9ece6a'></span>",
+        "format-alt": "{time} <span color='#9ece6a'>{icon}</span>",
         "format-icons": ["", "", "", "", ""]
     },
     "network": {
-        "format-wifi": "<span color='#9ece6a'></span> {essid} ({signalStrength}%) {bandwidthTotalBytes}",
-        "format-ethernet": "<span color='#9ece6a'></span> {ifname} {bandwidthTotalBytes}",
+        "format-wifi": "{essid} ({signalStrength}%) {bandwidthTotalBytes} <span color='#9ece6a'></span>",
+        "format-ethernet": "{ifname} {bandwidthTotalBytes} <span color='#9ece6a'></span>",
         "tooltip-format": "{ifname} via {gwaddr} ",
         "format-linked": "{ifname} (No IP) ",
         "format-disconnected": "<span color='#f7768e'>⚠</span> Disconnected",
-        "format-alt": "<span color='#9ece6a'></span> {ipaddr}/{cidr} {bandwidthTotalBytes}",
+        "format-alt": "{ipaddr}/{cidr} {bandwidthTotalBytes} <span color='#9ece6a'></span>",
         "on-click": "nm-connection-editor",
         "interval": 1
     },
     "pulseaudio": {
-        "format": "<span color='#7aa2f7'>{icon}</span> {volume}% {format_source}",
-        "format-bluetooth": "<span color='#7aa2f7'>{icon}</span> {volume}% {format_source}",
-        "format-bluetooth-muted": "<span color='#f7768e'> {icon}</span> {format_source}",
-        "format-muted": "<span color='#f7768e'></span> {format_source}",
-        "format-source": "<span color='#7aa2f7'></span> {volume}%",
-        "format-source-muted": "<span color='#f7768e'></span>",
+        "format": "{volume}% <span color='#7aa2f7'>{icon}</span>",
+        "format-bluetooth": "{volume}% <span color='#7aa2f7'>{icon}</span>",
+        "format-bluetooth-muted": "<span color='#f7768e'> {icon}</span>",
+        "format-muted": "<span color='#f7768e'></span>",
+        "format-source": "",
+        "format-source-muted": "",
         "format-icons": {
             "headphone": "",
             "hands-free": "",
@@ -121,18 +120,8 @@
             "default": ["", "", ""]
         },
         "on-click": "pavucontrol",
-        "on-scroll-up": "pactl set-sink-volume @DEFAULT_SINK@ +1%",
-        "on-scroll-down": "pactl set-sink-volume @DEFAULT_SINK@ -1%"
+        "on-scroll-up": "~/.config/waybar/scripts/volume-control.sh up",
+        "on-scroll-down": "~/.config/waybar/scripts/volume-control.sh down"
     },
-    "bluetooth": {
-        "format": "<span color='#78a9ff'></span> {status}",
-        "format-connected": "<span color='#78a9ff'></span> {device_alias}",
-        "format-connected-battery": "<span color='#78a9ff'></span> {device_alias} {device_battery_percentage}%",
-        "tooltip-format": "{controller_alias}\t{controller_address}\n\n{num_connections} connected",
-        "tooltip-format-connected": "{controller_alias}\t{controller_address}\n\n{num_connections} connected\n\n{device_enumerate}",
-        "tooltip-format-enumerate-connected": "{device_alias}\t{device_address}",
-        "tooltip-format-enumerate-connected-battery": "{device_alias}\t{device_address}\t{device_battery_percentage}%",
-        "on-click": "overskride",
-        "on-click-right": "~/.config/waybar/scripts/bluetooth-toggle.sh"
-    }
+
 }

@@ -1,6 +1,6 @@
 * {
     border: none;
-    border-radius: 0;
+    border-radius: 10px;
     font-family: "JetBrainsMono Nerd Font", "Font Awesome 6 Free", sans-serif;
     font-size: 15px;
     min-height: 0;
@@ -11,13 +11,13 @@ window#waybar {
     color: #c0caf5;
     transition-property: background-color;
     transition-duration: .5s;
+    margin: 5px 10px;
 }
 
 #workspaces {
     background-color: #24283b;
     margin: 5px 2px;
     margin-left: 8px;
-    border-radius: 10px;
 }
 
 #workspaces button {
@@ -56,55 +56,22 @@ window#waybar {
 }
 
 #mpris {
-    border-radius: 10px;
     margin-left: 5px;
 }
 
 #window {
-    border-radius: 10px;
     margin-left: 5px;
-}
-
-#clock {
-    border-radius: 10px;
 }
 
 #pulseaudio {
-    border-radius: 10px 0 0 10px;
     margin-left: 5px;
 }
 
-#bluetooth {
-    border-radius: 0;
-}
-
-#network {
-    border-radius: 0;
-}
-
-#cpu {
-    border-radius: 0;
-}
-
-#memory {
-    border-radius: 0;
-}
-
-#temperature {
-    border-radius: 0;
-}
-
-#backlight {
-    border-radius: 0;
-}
-
 #battery {
-    border-radius: 0 10px 10px 0;
     margin-right: 2px;
 }
 
 #tray {
-    border-radius: 10px;
     margin-left: 2px;
     margin-right: 8px;
 }

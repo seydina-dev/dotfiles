@@ -146,8 +146,8 @@ git-exclude = true
 # # Run check (lint + format) for current file
 # "<leader>c" = ":write | :sh biome check --apply %"
 
-# # Rust-specific commands
-# "<leader>rr" = ":write | :sh cargo run"
+# Rust-specific commands
+# "backspace"= { r = ":sh cargo run" }
 # "<leader>rb" = ":write | :sh cargo build"
 # "<leader>rt" = ":write | :sh cargo test"
 # "<leader>rc" = ":write | :sh cargo check"
@@ -205,3 +205,4 @@ C-e = [
   ':open %sh{cat /tmp/unique-file}',
   ':redraw',
 ]
+"backspace"= { r = ":sh cargo run" }
