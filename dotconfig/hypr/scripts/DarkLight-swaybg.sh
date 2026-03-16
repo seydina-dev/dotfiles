@@ -1,7 +1,7 @@
 #!/bin/bash
 set -x
 # Define the path
-wallpaper_path="$HOME/Pictures/wallpapers/Dynamic-Wallpapers"
+wallpaper_path="$HOME/Pictures/Wallpapers/Dynamic-Wallpapers"
 hypr_config_path="$HOME/.config/hypr"
 
 # Define the GTK themes for light and dark modes

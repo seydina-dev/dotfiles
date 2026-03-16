@@ -58,7 +58,7 @@ ${HYPR_SCRIPTS}/Mako.sh &
 killall -USR1 kitty
 
 # 6. Wallpaper (Optional/Dynamic)
-WALLPAPER_PATH="$HOME/Pictures/wallpapers"
+WALLPAPER_PATH="$HOME/Pictures/Wallpapers"
 if [ -d "$WALLPAPER_PATH" ]; then
     NEXT_WALL=$(find "$WALLPAPER_PATH" -type f \( -iname "*${NEXT_MODE}*" \) | shuf -n1)
     if [ -n "$NEXT_WALL" ]; then

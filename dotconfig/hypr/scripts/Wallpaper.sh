@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DIR=$HOME/Pictures/wallpapers/
+DIR=$HOME/Pictures/Wallpapers/
 PICS=($(find ${DIR} -type f \( -name "*.jpg" -o -name "*.jpeg" -o -name "*.png" -o -name "*.gif" \)))
 RANDOMPICS=${PICS[ $RANDOM % ${#PICS[@]} ]}
 
