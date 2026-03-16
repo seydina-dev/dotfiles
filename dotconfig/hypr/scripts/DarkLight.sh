@@ -1,3 +1,4 @@
+#!/bin/bash
 # This script toggles the entire system between Dark and Light modes.
 # It updates configurations for Waybar, Wofi, Mako, Kitty, Helix, and GTK.
 # It also attempts to find a matching wallpaper in ~/Pictures/wallpapers.
