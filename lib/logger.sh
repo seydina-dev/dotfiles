@@ -111,3 +111,14 @@ show_log_info() {
         log_warning "Logging to file is not available"
     fi
 }
+
+# Show recent log entries
+show_recent_logs() {
+    local lines="${1:-10}"
+    if is_logging_available; then
+        log_header "Recent Log Entries (last $lines lines)"
+        tail -n "$lines" "$LOG_FILE"
+    else
+        log_warning "Log file not available to show entries"
+    fi
+}

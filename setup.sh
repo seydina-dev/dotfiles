@@ -43,6 +43,7 @@ ${GREEN}Available Modules:${RESET}
   dotfiles    Link dotfiles and configuration
   services    Enable system services
   dwm         Install DWM and window manager components
+  hyprland    Install Hyprland and Wayland components
   fonts       Install fonts
   scripts     Install custom scripts
 
