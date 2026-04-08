@@ -1,50 +1,17 @@
-#!/bin/sh
-# leb: Interactive config editor using sys-menu and $EDITOR
+#! /bin/sh
 
-EDITOR="${EDITOR:-vim}"
-
-# List directories in ~/.config
-d=$(find ~/.config -maxdepth 1 -mindepth 1 -type d | sed "s|$HOME/.config/||" | sys-menu "config dir:")
-
-[ -z "$d" ] && exit 0
-
-full_path="$HOME/.config/$d"
-choice="$d"
-
-case "$choice" in
-    dwm|st|dmenu)
-        if [ -e "$full_path/config.def.h" ]; then
-            "$EDITOR" "$full_path/config.def.h"
-        elif [ -e "$full_path/config.h" ]; then
-            "$EDITOR" "$full_path/config.h"
-        fi
-        ;;
-    picom)
-        "$EDITOR" "$full_path/picom.conf"
-        ;;
-    kitty)
-        "$EDITOR" "$full_path/kitty.conf"
-        ;;
-    helix)
-        "$EDITOR" "$full_path/config.toml"
-        ;;
-    hypr)
-        "$EDITOR" "$full_path/hyprland.conf"
-        ;;
-    waybar)
-        "$EDITOR" "$full_path/config.jsonc"
-        ;;
-    *)
-        # Default: try to find common config files or just enter the directory
-        if [ -f "$full_path/config" ]; then
-             "$EDITOR" "$full_path/config"
-        elif [ -f "$full_path/init.lua" ]; then
-             "$EDITOR" "$full_path/init.lua"
-        elif [ -f "$full_path/settings.json" ]; then
-             "$EDITOR" "$full_path/settings.json"
-        else
-            echo "Entering $full_path..."
-            cd "$full_path" && $SHELL
-        fi
-        ;;
+d="$(printf "%s\n" ~/.config/* |dmenu -p "config dir: " -l 20)"
+choice=$(echo "${d##*/}")
+(cd "$d"
+case $choice in
+	dwm|st|dmenu) 
+		([ -e config.def.h ] && vim config.def.h) ||
+		([ -e config.h ] && vim config.h)
+		;;
+	picom)
+		cd $d && vim picom.conf ;;
+	termite)
+		cd $d vim && conf ;;
+	*) cd $d ;;
 esac
+)
