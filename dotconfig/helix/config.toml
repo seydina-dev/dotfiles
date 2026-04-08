@@ -206,3 +206,16 @@ C-e = [
   ':redraw',
 ]
 "backspace"= { r = ":sh cargo run" }
+
+# System clipboard integration
+y = "yank_main_selection_to_clipboard"
+Y = "yank_joined_to_clipboard"
+p = "paste_clipboard_after"
+P = "paste_clipboard_before"
+R = "replace_selections_with_clipboard"
+
+[keys.normal."space"]
+# Cargo commands
+c = { r = ":sh cargo run", b = ":sh cargo build", t = ":sh cargo test", c = ":sh cargo check", f = ":sh cargo fmt" }
+# Floating Terminal Popup via Zellij
+t = ":sh zellij action new-pane -f"
