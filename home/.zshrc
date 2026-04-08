@@ -25,4 +25,4 @@ plugins=(git)
 eval "$(starship init zsh)"
 
 # Added by dotfiles setup
-export PATH="$HOME/.local/bin:$PATH"
+export PATH="/home/amiral/.local/bin:$PATH"

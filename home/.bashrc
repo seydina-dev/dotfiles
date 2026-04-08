@@ -16,10 +16,10 @@ export NVM_DIR="$HOME/.nvm"
 eval "$(starship init bash)"
 
 # Added by dotfiles setup
-export PATH="$HOME/.local/bin:$PATH"
+export PATH="/home/amiral/.local/bin:$PATH"
 
 # pnpm
-export PNPM_HOME="$HOME/.local/share/pnpm"
+export PNPM_HOME="/home/amiral/.local/share/pnpm"
 case ":$PATH:" in
   *":$PNPM_HOME:"*) ;;
   *) export PATH="$PNPM_HOME:$PATH" ;;

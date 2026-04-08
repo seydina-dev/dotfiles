@@ -321,3 +321,111 @@ android-perm() {
     echo "Current permissions:"
     ls -la ~/.android/ 2>/dev/null || echo "~/.android directory is empty"
 }
+
+# Interactive Helix Multi-File Opener with Zellij
+hxm() {
+    if ! command -v fd >/dev/null 2>&1 || ! command -v fzf >/dev/null 2>&1; then
+        echo "fd or fzf is not installed."
+        return 1
+    fi
+
+    # 1. Select the project directory (searches 2 levels deep in ~/code)
+    local target_dir
+    target_dir=$(fd --type d --min-depth 1 --max-depth 2 . "$HOME/code" | fzf --reverse --border --height 40% --prompt="Select Workspace 📁: ")
+    
+    if [ -z "$target_dir" ]; then return 1; fi
+    cd "$target_dir" || return 1
+    
+    # 2. Select files to open
+    local selected_files
+    selected_files=$(fd --type f --hidden --exclude .git | fzf --reverse --border --height 60% -m --prompt="Select Files (TAB to multi-select) 📄: ")
+    
+    # 3. Format the selected files into a single bash command string
+    local hx_files=""
+    if [ -n "$selected_files" ]; then
+        while IFS= read -r file; do
+            [ -n "$file" ] || continue
+            hx_files="$hx_files '$file'"
+        done <<< "$selected_files"
+    else
+        hx_files=" ."
+    fi
+    
+    local cmd_line="helix $hx_files"
+
+    # 4. Generate a dynamic Zellij layout on the fly
+    local temp_layout
+    temp_layout=$(mktemp --suffix=.kdl)
+    
+    # Check if project is in the rust or react-native (rn) directories
+    if echo "$target_dir" | grep -q "/rust/"; then
+        # RUST LAYOUT (Fullscreen Helix)
+        cat <<INNER_EOF > "$temp_layout"
+layout {
+    default_tab_template {
+        pane size=1 borderless=true {
+            plugin location="zellij:tab-bar"
+        }
+        children
+        pane size=2 borderless=true {
+            plugin location="zellij:status-bar"
+        }
+    }
+    tab name="$(basename "$target_dir")" focus=true {
+        pane command="bash" focus=true {
+            args "-ic" "$cmd_line"
+        }
+    }
+}
+INNER_EOF
+    elif echo "$target_dir" | grep -q "/rn/"; then
+        # REACT NATIVE LAYOUT (Split pane for Metro Bundler)
+        cat <<INNER_EOF > "$temp_layout"
+layout {
+    default_tab_template {
+        pane size=1 borderless=true {
+            plugin location="zellij:tab-bar"
+        }
+        children
+        pane size=2 borderless=true {
+            plugin location="zellij:status-bar"
+        }
+    }
+    tab name="$(basename "$target_dir")" focus=true {
+        pane split_direction="horizontal" {
+            pane size="75%" command="bash" focus=true {
+                args "-ic" "$cmd_line"
+            }
+            pane size="25%" name="Metro Bundler"
+        }
+    }
+}
+INNER_EOF
+    else
+        # DEFAULT LAYOUT
+        cat <<INNER_EOF > "$temp_layout"
+layout {
+    default_tab_template {
+        pane size=1 borderless=true {
+            plugin location="zellij:tab-bar"
+        }
+        children
+        pane size=2 borderless=true {
+            plugin location="zellij:status-bar"
+        }
+    }
+    tab name="$(basename "$target_dir")" focus=true {
+        pane command="bash" focus=true {
+            args "-ic" "$cmd_line"
+        }
+    }
+}
+INNER_EOF
+    fi
+
+    # 5. Launch Zellij (No persistent session checks, just open it dynamically)
+    zellij --layout "$temp_layout"
+    
+    # Cleanup
+    rm -f "$temp_layout"
+}
