@@ -1,6 +1,5 @@
 * {
     border: none;
-    border-radius: 10px;
     font-family: "JetBrainsMono Nerd Font", "Font Awesome 6 Free", sans-serif;
     font-size: 15px;
     min-height: 0;
@@ -11,13 +10,14 @@ window#waybar {
     color: #c0caf5;
     transition-property: background-color;
     transition-duration: .5s;
-    margin: 5px 10px;
+    border-radius: 10px;
 }
 
 #workspaces {
     background-color: #24283b;
     margin: 5px 2px;
     margin-left: 8px;
+    border-radius: 10px;
 }
 
 #workspaces button {
@@ -37,53 +37,99 @@ window#waybar {
     color: #f7768e;
 }
 
-#clock,
-#battery,
-#cpu,
-#memory,
-#temperature,
-#backlight,
-#network,
-#pulseaudio,
-#bluetooth,
-#mpris,
-#tray,
-#window {
+#clock {
     padding: 0 10px;
     margin: 5px 2px;
     color: #c0caf5;
     background-color: #24283b;
+    border-radius: 10px;
 }
 
 #mpris {
+    padding: 0 10px;
+    margin: 5px 2px;
     margin-left: 5px;
+    color: #c0caf5;
+    background-color: #24283b;
+    border-radius: 10px;
 }
 
 #window {
+    padding: 0 10px;
+    margin: 5px 2px;
     margin-left: 5px;
+    color: #c0caf5;
+    background-color: #24283b;
+    border-radius: 10px;
 }
 
 #pulseaudio {
+    padding: 0 10px;
+    margin: 5px 2px;
     margin-left: 5px;
+    color: #c0caf5;
+    background-color: #24283b;
+    border-radius: 10px;
+}
+
+#network {
+    padding: 0 10px;
+    margin: 5px 2px;
+    color: #c0caf5;
+    background-color: #24283b;
+    border-radius: 10px;
+}
+
+#cpu {
+    padding: 0 10px;
+    margin: 5px 2px;
+    color: #c0caf5;
+    background-color: #24283b;
+    border-radius: 10px;
+}
+
+#memory {
+    padding: 0 10px;
+    margin: 5px 2px;
+    color: #c0caf5;
+    background-color: #24283b;
+    border-radius: 10px;
+}
+
+#temperature {
+    padding: 0 10px;
+    margin: 5px 2px;
+    color: #c0caf5;
+    background-color: #24283b;
+    border-radius: 10px;
+}
+
+#backlight {
+    padding: 0 10px;
+    margin: 5px 2px;
+    color: #c0caf5;
+    background-color: #24283b;
+    border-radius: 10px;
 }
 
 #battery {
+    padding: 0 10px;
+    margin: 5px 2px;
     margin-right: 2px;
+    color: #c0caf5;
+    background-color: #24283b;
+    border-radius: 10px;
 }
 
 #tray {
+    padding: 0 10px;
+    margin: 5px 2px;
     margin-left: 2px;
     margin-right: 8px;
+    color: #c0caf5;
+    background-color: #24283b;
+    border-radius: 10px;
 }
-
-/* #battery.critical:not(.charging) { */
-    /* color: #f7768e; */
-    /* animation-name: blink; */
-    /* animation-duration: 0.5s; */
-    /* animation-timing-function: linear; */
-    /* animation-iteration-count: infinite; */
-    /* animation-direction: alternate; */
-/* } */
 
 @keyframes blink {
     to {
