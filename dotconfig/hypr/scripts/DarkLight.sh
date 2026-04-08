@@ -1,4 +1,3 @@
-#!/bin/bash
 # This script toggles the entire system between Dark and Light modes.
 # It updates configurations for Waybar, Wofi, Mako, Kitty, Helix, and GTK.
 # It also attempts to find a matching wallpaper in ~/Pictures/wallpapers.
@@ -58,11 +57,11 @@ ${HYPR_SCRIPTS}/Mako.sh &
 killall -USR1 kitty
 
 # 6. Wallpaper (Optional/Dynamic)
-WALLPAPER_PATH="$HOME/Pictures/Wallpapers"
+WALLPAPER_PATH="$HOME/Pictures/wallpapers"
 if [ -d "$WALLPAPER_PATH" ]; then
     NEXT_WALL=$(find "$WALLPAPER_PATH" -type f \( -iname "*${NEXT_MODE}*" \) | shuf -n1)
     if [ -n "$NEXT_WALL" ]; then
-        swww img "$NEXT_WALL" --transition-type grow --transition-pos "$(hyprctl cursorpos | sed 's/,//' || echo "0,0")" --transition-duration 2
+        awww img "$NEXT_WALL" --transition-type grow --transition-pos "$(hyprctl cursorpos | sed 's/,//' || echo "0,0")" --transition-duration 2
         echo "$NEXT_WALL" > ~/.current_wallpaper
     fi
 fi

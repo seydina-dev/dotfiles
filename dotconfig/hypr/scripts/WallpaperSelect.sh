@@ -3,7 +3,7 @@
 # WALLPAPERS PATH
 DIR=$HOME/Pictures/Wallpapers
 
-# Transition config (type swww img --help for more settings
+# Transition config (type awww img --help for more settings
 FPS=30
 TYPE="simple"
 DURATION=3
@@ -52,7 +52,7 @@ menu(){
     printf "$RANDOM_PIC_NAME"
 }
 
-swww query || swww init
+awww query || awww-daemon &
 
 main() {
     choice=$(menu | ${wofi_command})
@@ -62,12 +62,12 @@ main() {
 
     # random choice case
     if [ "$choice" = "$RANDOM_PIC_NAME" ]; then
-        swww img ${DIR}/${RANDOM_PIC} $SWWW_PARAMS
+        awww img ${DIR}/${RANDOM_PIC} $SWWW_PARAMS
         return
     fi
 
     pic_index=$(echo $choice | cut -d. -f1)
-    swww img ${DIR}/${PICS[$pic_index]} $SWWW_PARAMS
+    awww img ${DIR}/${PICS[$pic_index]} $SWWW_PARAMS
 }
 
 # Check if wofi is already running

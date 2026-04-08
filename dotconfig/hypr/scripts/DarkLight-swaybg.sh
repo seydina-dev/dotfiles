@@ -1,7 +1,7 @@
 #!/bin/bash
 set -x
 # Define the path
-wallpaper_path="$HOME/Pictures/Wallpapers/Dynamic-Wallpapers"
+wallpaper_path="$HOME/Pictures/wallpapers/Dynamic-Wallpapers"
 hypr_config_path="$HOME/.config/hypr"
 
 # Define the GTK themes for light and dark modes
@@ -33,7 +33,7 @@ fi
 path_param=$(echo $next_mode | sed 's/.*/\u&/')
 
 notify_user "$next_mode"
-ln -sf "$HOME/.config/waybar/styles/style-${next_mode}.css" "$HOME/.config/waybar/style.css"
+ln -sf "${hypr_config_path}/waybar/style/style-${next_mode}.css" "${hypr_config_path}/waybar/style.css"
 ln -sf "$HOME/.config/mako/styles/config-${next_mode}" "$HOME/.config/mako/config"
 ln -sf "$HOME/.config/wofi/styles/style-${next_mode}.css" "$HOME/.config/wofi/style.css"
 
