@@ -1,0 +1,28 @@
+// TCP Server/Client Development Layout
+// Tab 1: Helix editor (focused)
+// Tab 2: Server (left), Client (right), Logs (bottom)
+layout {
+    default_tab_template {
+        pane size=1 borderless=true {
+            plugin location="zellij:tab-bar"
+        }
+        children
+        pane size=2 borderless=true {
+            plugin location="zellij:status-bar"
+        }
+    }
+    tab name="Editor" focus=true {
+        pane command="helix" focus=true {
+            args "."
+        }
+    }
+    tab name="Server / Client" {
+        pane split_direction="vertical" {
+            pane split_direction="horizontal" size="50%" {
+                pane name="Server" focus=true
+                pane name="Logs"
+            }
+            pane name="Client" size="50%"
+        }
+    }
+}

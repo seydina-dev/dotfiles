@@ -1,0 +1,22 @@
+// Rust Development Layout
+// Tab 1: Helix editor (focused)
+// Tab 2: Shell for cargo commands / output
+layout {
+    default_tab_template {
+        pane size=1 borderless=true {
+            plugin location="zellij:tab-bar"
+        }
+        children
+        pane size=2 borderless=true {
+            plugin location="zellij:status-bar"
+        }
+    }
+    tab name="Editor" focus=true {
+        pane command="helix" focus=true {
+            args "."
+        }
+    }
+    tab name="Shell" {
+        pane name="Cargo" focus=true
+    }
+}
