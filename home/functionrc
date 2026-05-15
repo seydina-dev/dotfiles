@@ -70,6 +70,16 @@ cdd() {
     target=$(fd --type d --hidden --exclude .git --max-depth 4 . "$HOME" | fzf --reverse --border --height 40%)
     [ -n "$target" ] && cd "$target" || return
 }
+ccd() {
+    if ! command -v fd >/dev/null 2>&1 || ! command -v fzf >/dev/null 2>&1; then
+        echo "fd or fzf is not installed."
+        return 1
+    fi
+
+    local target
+    target=$(fd --type d --hidden --exclude .git --max-depth 4 . "$HOME/code" | fzf --reverse --border --height 40%)
+    [ -n "$target" ] && cd "$target" || return
+}
 
 # Interactive file opener
 open_fzf() {
@@ -322,45 +332,94 @@ android-perm() {
     ls -la ~/.android/ 2>/dev/null || echo "~/.android directory is empty"
 }
 
-# Interactive Helix Multi-File Opener with Zellij
+# ---------------------------------------------------------------------------
+# hxm — Interactive Helix + Zellij workspace launcher
+#
+# Usage: hxm
+#   1. Pick a project from ~/code (fzf)
+#   2. Pick which layout to use (fzf over ~/.config/zellij/layouts/)
+#      — auto-suggests tcp/rust/rn based on project path
+#   3. Optionally pick specific files to open, or open the whole workspace
+#   4. Launches Zellij with the chosen layout, Helix starts in the editor tab
+# ---------------------------------------------------------------------------
 hxm() {
-    if ! command -v fd >/dev/null 2>&1 || ! command -v fzf >/dev/null 2>&1; then
-        echo "fd or fzf is not installed."
+    if ! command -v fd > /dev/null 2>&1 || ! command -v fzf > /dev/null 2>&1; then
+        echo "fd and fzf are required for hxm()."
         return 1
     fi
 
-    # 1. Select the project directory (searches 2 levels deep in ~/code)
+    local LAYOUT_DIR="$HOME/.config/zellij/layouts"
+
+    # 1. Select the project directory (2 levels deep in ~/code)
     local target_dir
-    target_dir=$(fd --type d --min-depth 1 --max-depth 2 . "$HOME/code" | fzf --reverse --border --height 40% --prompt="Select Workspace 📁: ")
-    
-    if [ -z "$target_dir" ]; then return 1; fi
+    target_dir=$(fd --type d --min-depth 1 --max-depth 2 . "$HOME/code" | \
+        fzf --reverse --border --height 40% --prompt="Workspace > ")
+
+    [ -z "$target_dir" ] && return 1
     cd "$target_dir" || return 1
-    
-    # 2. Select files to open
-    local selected_files
-    selected_files=$(fd --type f --hidden --exclude .git | fzf --reverse --border --height 60% -m --prompt="Select Files (TAB to multi-select) 📄: ")
-    
-    # 3. Format the selected files into a single bash command string
-    local hx_files=""
+
+    local project_name
+    project_name=$(basename "$target_dir")
+
+    # 2. Suggest a layout based on project path, then let the user confirm/change
+    local default_layout=""
+    if echo "$target_dir" | grep -q "/rn/"; then
+        default_layout="rn"
+    elif echo "$target_dir" | grep -q "/rust/"; then
+        default_layout="rust"
+    fi
+
+    # Build layout list: put the suggested one first so it's the default selection
+    local layout_list
+    layout_list=$(fd --type f --extension kdl . "$LAYOUT_DIR" | \
+        xargs -I{} basename {} .kdl | sort)
+
+    # If we have a suggestion, bubble it to the top
+    if [ -n "$default_layout" ]; then
+        layout_list=$(printf "%s\n%s" "$default_layout" \
+            "$(echo "$layout_list" | grep -v "^${default_layout}$")")
+    fi
+
+    local chosen_layout
+    chosen_layout=$(echo "$layout_list" | \
+        fzf --reverse --border --height 30% \
+            --prompt="Layout > " \
+            --header="Suggested: ${default_layout:-default} | Tab to confirm, type to filter")
+
+    # If user pressed Esc at layout step, default to a plain editor layout
+    [ -z "$chosen_layout" ] && chosen_layout="default"
+
+    # 3. File picker — works for every layout type
+    local selected_files hx_args
+    selected_files=$(fd --type f --hidden --exclude .git --exclude target \
+        --exclude node_modules | \
+        fzf --reverse --border --height 60% -m \
+            --prompt="Files > " \
+            --header="TAB: multi-select | Enter: open | Esc: open workspace root")
+
+    # Build a shell-safe helix command, then KDL-escape it (escape " as \")
+    # KDL args node: args "-ic" "<cmd>" — the cmd must be a valid KDL string
+    local hx_cmd
     if [ -n "$selected_files" ]; then
+        hx_cmd="helix"
         while IFS= read -r file; do
             [ -n "$file" ] || continue
-            hx_files="$hx_files '$file'"
+            hx_cmd="$hx_cmd $(printf '%q' "$file")"
         done <<< "$selected_files"
     else
-        hx_files=" ."
+        hx_cmd="helix ."
     fi
-    
-    local cmd_line="helix $hx_files"
+    # Escape any double-quotes in the command so it is valid inside a KDL string
+    local hx_cmd_kdl
+    hx_cmd_kdl=$(printf '%s' "$hx_cmd" | sed 's/"/\\"/g')
 
-    # 4. Generate a dynamic Zellij layout on the fly
+    # 4. Generate temp layout — always, so hx_cmd (with selected files) is embedded
     local temp_layout
     temp_layout=$(mktemp --suffix=.kdl)
-    
-    # Check if project is in the rust or react-native (rn) directories
-    if echo "$target_dir" | grep -q "/rust/"; then
-        # RUST LAYOUT (Fullscreen Helix)
-        cat <<INNER_EOF > "$temp_layout"
+
+    case "$chosen_layout" in
+        tcp)
+            cat <<LAYOUT_EOF > "$temp_layout"
 layout {
     default_tab_template {
         pane size=1 borderless=true {
@@ -371,39 +430,25 @@ layout {
             plugin location="zellij:status-bar"
         }
     }
-    tab name="$(basename "$target_dir")" focus=true {
+    tab name="Editor" focus=true {
         pane command="bash" focus=true {
-            args "-ic" "$cmd_line"
+            args "-ic" "$hx_cmd_kdl"
         }
     }
-}
-INNER_EOF
-    elif echo "$target_dir" | grep -q "/rn/"; then
-        # REACT NATIVE LAYOUT (Split pane for Metro Bundler)
-        cat <<INNER_EOF > "$temp_layout"
-layout {
-    default_tab_template {
-        pane size=1 borderless=true {
-            plugin location="zellij:tab-bar"
-        }
-        children
-        pane size=2 borderless=true {
-            plugin location="zellij:status-bar"
-        }
-    }
-    tab name="$(basename "$target_dir")" focus=true {
-        pane split_direction="horizontal" {
-            pane size="75%" command="bash" focus=true {
-                args "-ic" "$cmd_line"
+    tab name="Server / Client" {
+        pane split_direction="vertical" {
+            pane split_direction="horizontal" size="50%" {
+                pane name="Server" focus=true
+                pane name="Logs"
             }
-            pane size="25%" name="Metro Bundler"
+            pane name="Client" size="50%"
         }
     }
 }
-INNER_EOF
-    else
-        # DEFAULT LAYOUT
-        cat <<INNER_EOF > "$temp_layout"
+LAYOUT_EOF
+            ;;
+        rn)
+            cat <<LAYOUT_EOF > "$temp_layout"
 layout {
     default_tab_template {
         pane size=1 borderless=true {
@@ -414,18 +459,127 @@ layout {
             plugin location="zellij:status-bar"
         }
     }
-    tab name="$(basename "$target_dir")" focus=true {
+    tab name="Editor" focus=true {
         pane command="bash" focus=true {
-            args "-ic" "$cmd_line"
+            args "-ic" "$hx_cmd_kdl"
+        }
+    }
+    tab name="Metro / Logs" {
+        pane split_direction="vertical" {
+            pane name="Metro Bundler" size="60%" focus=true
+            pane name="Device Logs" size="40%"
         }
     }
 }
-INNER_EOF
+LAYOUT_EOF
+            ;;
+        rust)
+            cat <<LAYOUT_EOF > "$temp_layout"
+layout {
+    default_tab_template {
+        pane size=1 borderless=true {
+            plugin location="zellij:tab-bar"
+        }
+        children
+        pane size=2 borderless=true {
+            plugin location="zellij:status-bar"
+        }
+    }
+    tab name="Editor" focus=true {
+        pane command="bash" focus=true {
+            args "-ic" "$hx_cmd_kdl"
+        }
+    }
+    tab name="Shell" {
+        pane name="Cargo" focus=true
+    }
+}
+LAYOUT_EOF
+            ;;
+        *)
+            # default / any unknown layout name
+            cat <<LAYOUT_EOF > "$temp_layout"
+layout {
+    default_tab_template {
+        pane size=1 borderless=true {
+            plugin location="zellij:tab-bar"
+        }
+        children
+        pane size=2 borderless=true {
+            plugin location="zellij:status-bar"
+        }
+    }
+    tab name="$project_name" focus=true {
+        pane command="bash" focus=true {
+            args "-ic" "$hx_cmd_kdl"
+        }
+    }
+}
+LAYOUT_EOF
+            ;;
+    esac
+
+    zellij --layout "$temp_layout"
+    rm -f "$temp_layout"
+}
+
+# ---------------------------------------------------------------------------
+# snip — Fuzzy snippet browser
+#
+# Usage:
+#   snip           — browse all snippets
+#   snip rust      — browse only ~/snippets/rust/
+#   snip rn        — browse only ~/snippets/react-native/
+#
+# Selected snippet is displayed in the editor (hx), or copy it to clipboard.
+# ---------------------------------------------------------------------------
+snip() {
+    if ! command -v fd > /dev/null 2>&1 || ! command -v fzf > /dev/null 2>&1; then
+        echo "fd and fzf are required for snip()."
+        return 1
     fi
 
-    # 5. Launch Zellij (No persistent session checks, just open it dynamically)
-    zellij --layout "$temp_layout"
-    
-    # Cleanup
-    rm -f "$temp_layout"
+    local SNIP_DIR="$HOME/snippets"
+    local search_dir="$SNIP_DIR"
+
+    # Optional language filter
+    case "$1" in
+        rust)          search_dir="$SNIP_DIR/rust" ;;
+        rn|react|expo) search_dir="$SNIP_DIR/react-native" ;;
+        "")            search_dir="$SNIP_DIR" ;;
+        *)
+            # Treat as a direct subdirectory name
+            if [ -d "$SNIP_DIR/$1" ]; then
+                search_dir="$SNIP_DIR/$1"
+            else
+                echo "No snippet directory for '$1'. Available: $(ls "$SNIP_DIR" | tr '\n' ' ')"
+                return 1
+            fi
+            ;;
+    esac
+
+    local preview_cmd
+    if command -v bat > /dev/null 2>&1; then
+        preview_cmd="bat --color=always --style=numbers {}"
+    else
+        preview_cmd="cat {}"
+    fi
+
+    local selected
+    selected=$(fd --type f . "$search_dir" | \
+        sed "s|$SNIP_DIR/||" | \
+        fzf \
+            --reverse \
+            --border \
+            --height 80% \
+            --prompt="Snippets > " \
+            --preview "$preview_cmd $SNIP_DIR/{}" \
+            --preview-window "right:60%:wrap" \
+            --bind "ctrl-y:execute-silent(cat $SNIP_DIR/{} | _cin)+abort" \
+            --header "enter: open in helix | ctrl-y: copy to clipboard | esc: cancel")
+
+    [ -z "$selected" ] && return 0
+
+    # Open the selected snippet in Helix
+    helix "$SNIP_DIR/$selected"
 }
