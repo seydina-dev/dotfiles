@@ -216,6 +216,30 @@ R = "replace_selections_with_clipboard"
 
 [keys.normal."space"]
 # Cargo commands
-c = { r = ":sh cargo run", b = ":sh cargo build", t = ":sh cargo test", c = ":sh cargo check", f = ":sh cargo fmt" }
+c = { r = ":sh cargo run", b = ":sh cargo build", t = ":sh cargo test", c = ":sh cargo check", f = ":sh cargo fmt", w = ":sh cargo-watch -x check" }
 # Floating Terminal Popup via Zellij
 t = ":sh zellij action new-pane -f"
+
+# Zellij tab/pane navigation — stay in the zone, don't leave Helix
+# space z <key>:
+#   n / p  — next / previous tab
+#   1-4    — jump directly to tab by number
+#   s      — focus "Server" pane  (TCP layout)
+#   c      — focus "Client" pane  (TCP layout)
+#   l      — focus "Logs" pane    (TCP layout)
+#   m      — focus "Metro Bundler" pane (RN layout)
+#   f      — toggle current pane fullscreen
+#   e      — open a new floating terminal pane
+[keys.normal."space".z]
+n = ":sh zellij action go-to-next-tab"
+p = ":sh zellij action go-to-previous-tab"
+"1" = ":sh zellij action go-to-tab 1"
+"2" = ":sh zellij action go-to-tab 2"
+"3" = ":sh zellij action go-to-tab 3"
+"4" = ":sh zellij action go-to-tab 4"
+s = ":sh zellij action focus-or-create-pane --name Server"
+c = ":sh zellij action focus-or-create-pane --name Client"
+l = ":sh zellij action focus-or-create-pane --name Logs"
+m = ":sh zellij action focus-or-create-pane --name Metro-Bundler"
+f = ":sh zellij action toggle-fullscreen"
+e = ":sh zellij action new-pane -f"
