@@ -36,6 +36,7 @@ ${GREEN}Options:${RESET}
   -f, --force         Skip confirmation prompts
   -m, --modules       Run specific modules (comma-separated)
   -s, --skip          Skip specific modules (comma-separated)
+  -w, --wifi          Install external WiFi drivers (rtl88x2bu, rtl8821ce, broadcom)
   --show-logs         Show recent log entries after setup
 
 ${GREEN}Available Modules:${RESET}
@@ -45,6 +46,7 @@ ${GREEN}Available Modules:${RESET}
   dwm         Install DWM and window manager components
   fonts       Install fonts
   scripts     Install custom scripts
+  wifi        Install external WiFi drivers
 
 ${GREEN}Examples:${RESET}
   $(basename "$0")                    # Full installation
@@ -83,6 +85,10 @@ parse_arguments() {
                 modules="$2"
                 shift 2
                 ;;
+            -w|--wifi)
+                INSTALL_WIFI=true
+                shift
+                ;;
             -s|--skip)
                 skip="$2"
                 shift 2
@@ -114,6 +120,13 @@ parse_arguments() {
         if [[ "$OS" != "termux" ]]; then
             [[ " ${available_modules[*]} " =~ " dwm " ]] && SELECTED_MODULES+=("dwm")
             [[ " ${available_modules[*]} " =~ " hyprland " ]] && SELECTED_MODULES+=("hyprland")
+        fi
+    fi
+
+
+    if [[ "$INSTALL_WIFI" == true ]]; then
+        if [[ ! " ${SELECTED_MODULES[@]} " =~ " wifi " ]]; then
+            SELECTED_MODULES+=("wifi")
         fi
     fi
 
