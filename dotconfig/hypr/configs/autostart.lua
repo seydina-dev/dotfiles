@@ -47,5 +47,5 @@ hl.on("hyprland.start", function()
     hl.exec_cmd("wl-paste --watch cliphist store")
 
     -- Scratchpad manager
-    hl.exec_cmd("hyprscratch init clean eager")
+    -- Native scratchpads used instead
 end)

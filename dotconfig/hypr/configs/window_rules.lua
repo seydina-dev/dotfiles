@@ -112,3 +112,20 @@ hl.window_rule({
 
 -- Uncomment to add blur to waybar:
 -- hl.layer_rule({ match = { namespace = "waybar" }, blur = true })
+
+
+-- =========================================================
+-- Native Scratchpads (Special Workspaces)
+-- =========================================================
+
+hl.workspace_rule({ workspace = "special:terminal", on_created_empty = "kitty --title terminal" })
+hl.window_rule({ match = { title = "terminal", workspace = "special:terminal" }, float = true, size = "70% 80%", center = true })
+
+hl.workspace_rule({ workspace = "special:config", on_created_empty = "kitty --title config -e helix " .. os.getenv("HOME") .. "/.config/hypr" })
+hl.window_rule({ match = { title = "config", workspace = "special:config" }, float = true, size = "70% 80%", center = true })
+
+hl.workspace_rule({ workspace = "special:yazi", on_created_empty = "kitty --title yazi -e yazi" })
+hl.window_rule({ match = { title = "yazi", workspace = "special:yazi" }, float = true, size = "70% 80%", center = true })
+
+hl.workspace_rule({ workspace = "special:scrcpy", on_created_empty = "scrcpy" })
+hl.window_rule({ match = { class = "scrcpy", workspace = "special:scrcpy" }, float = true, center = true })

@@ -184,10 +184,10 @@ hl.bind(mainMod .. " + SUPER + F6",     hl.dsp.exec_cmd(screenshot .. " --in10")
 -- Scratchpads (hyprscratch)
 -- =========================================================
 
-hl.bind(mainMod .. " + SHIFT + Return", hl.dsp.exec_cmd("hyprscratch terminal \"[size 70% 80%] kitty --title terminal\" persist pin"))
-hl.bind(mainMod .. " + C",             hl.dsp.exec_cmd("hyprscratch config \"[size 70% 80%] kitty --title config -e helix ~/.config/hypr\" persist pin"))
-hl.bind(customMod .. " + Y",           hl.dsp.exec_cmd("hyprscratch yazi \"[size 70% 80%] kitty --title yazi -e yazi\" persist pin"))
-hl.bind(customMod .. " + A",           hl.dsp.exec_cmd("hyprscratch scrcpy \"scrcpy\" persist pin"))
+hl.bind(mainMod .. " + SHIFT + Return", hl.dsp.workspace.toggle_special("terminal"))
+hl.bind(mainMod .. " + C",             hl.dsp.workspace.toggle_special("config"))
+hl.bind(customMod .. " + Y",           hl.dsp.workspace.toggle_special("yazi"))
+hl.bind(customMod .. " + A",           hl.dsp.workspace.toggle_special("scrcpy"))
 
 -- =========================================================
 -- Special / Function keys (ASUS ROG + Fn keys)
