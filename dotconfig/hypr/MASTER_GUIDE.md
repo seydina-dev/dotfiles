@@ -3,12 +3,12 @@
 Welcome to your new system! This guide explains how everything is connected so you can customize it without getting lost.
 
 ## ⌨️ Keybindings & The Help System (`SUPER + H`)
-Your keybindings are managed in `~/.config/hypr/configs/Keybinds.conf`.
+Your keybindings are managed in `~/.config/hypr/configs/keybinds.lua`.
 
 ### How it works:
-When you press `SUPER + H`, a Python script (`GenerateHelp.py`) reads your `Keybinds.conf` file, finds every line starting with `bind`, and builds a table.
+When you press `SUPER + H`, a Python script (`GenerateHelp.py`) reads your `keybinds.lua` file, finds every line starting with `hl.bind`, and builds a table.
 *   **To add a description:** Just add a comment at the end of the line:
-    `bind = $mainMod, G, exec, google-chrome # Open Chrome`
+    `hl.bind(mainMod .. " + W", hl.dsp.exec_cmd(browser)) -- Open Chrome`
 *   **The Pager:** It uses `bat` (a better `cat`) to show the menu. Use the arrow keys to scroll and `q` to quit.
 
 ---

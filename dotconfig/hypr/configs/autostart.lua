@@ -26,7 +26,7 @@ hl.on("hyprland.start", function()
     hl.exec_cmd("pipewire-pulse")
 
     -- Hide the mouse cursor when idling
-    hl.exec_cmd("unlutter")
+    hl.exec_cmd("unclutter")
 
     -- Wallpaper daemon
     hl.exec_cmd("awww-daemon")

@@ -1,11 +1,11 @@
 #!/bin/bash
 # Antigravity Robust Help Script
 
-# 1. Setup absolute paths for binaries
-PYTHON="/usr/bin/python3"
-KITTY="/usr/bin/kitty"
-BAT="/usr/bin/bat"
-NOTIFY="/usr/bin/notify-send"
+# 1. Setup paths for binaries dynamically
+PYTHON="$(command -v python3 || echo "/usr/bin/python3")"
+KITTY="$(command -v kitty || echo "/usr/bin/kitty")"
+BAT="$(command -v bat || echo "/usr/bin/bat")"
+NOTIFY="$(command -v notify-send || echo "/usr/bin/notify-send")"
 
 # 2. Setup script locations
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

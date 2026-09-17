@@ -150,12 +150,12 @@ hl.bind(mainMod .. " + period",     hl.dsp.focus({ workspace = "e+1" }))
 hl.bind(mainMod .. " + comma",      hl.dsp.focus({ workspace = "e-1" }))
 
 -- Cycle workspaces on current monitor
-hl.bind(mainMod .. " + Tab",        hl.dsp.focus({ workspace = "m+1" }))
-hl.bind(mainMod .. " + SHIFT + Tab", hl.dsp.focus({ workspace = "m-1" }))
+hl.bind(mainMod .. " + bracketright", hl.dsp.focus({ workspace = "m+1" }))
+hl.bind(mainMod .. " + bracketleft",  hl.dsp.focus({ workspace = "m-1" }))
 
--- Also cycle focus (Tab = next window, SUPER+SHIFT+Tab = bring to top)
-hl.bind(mainMod .. " + Tab",        hl.dsp.window.cycle_next())
-hl.bind("SUPER + SHIFT + Tab",      hl.dsp.window.bring_to_top())
+-- Cycle window focus (Tab = next window, SHIFT+Tab = bring to top)
+hl.bind(mainMod .. " + Tab",          hl.dsp.window.cycle_next())
+hl.bind(mainMod .. " + SHIFT + Tab",  hl.dsp.window.bring_to_top())
 
 -- =========================================================
 -- Mouse window management

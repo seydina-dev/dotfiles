@@ -64,7 +64,7 @@ hl.window_rule({
 -- =========================================================
 
 hl.window_rule({ match = { class = "^(firefox)$" },                                            workspace = "2 silent"  })
-hl.window_rule({ match = { class = "^(google-chrome)$" },                                      workspace = "4 silent"  })
+hl.window_rule({ match = { class = "^(google-chrome)$" },                                      workspace = "4"  })
 hl.window_rule({ match = { class = "^(obsidian)$" },                                           workspace = "5 silent"  })
 hl.window_rule({ match = { class = "^(Zed)$", title = "^(Zed)$" },                            workspace = "5 silent"  })
 hl.window_rule({ match = { class = "^(thunar)$" },                                             workspace = "3 silent"  })
@@ -118,21 +118,10 @@ hl.window_rule({
 -- Native Scratchpads (Special Workspaces)
 -- =========================================================
 
-hl.workspace_rule({ workspace = "special:terminal", on_created_empty = "kitty --class scratch_term --title terminal" })
-hl.window_rule({ match = { class = "scratch_term" }, float = true })
-hl.window_rule({ match = { class = "scratch_term" }, size = "70% 80%" })
-hl.window_rule({ match = { class = "scratch_term" }, center = true })
+hl.workspace_rule({ workspace = "special:terminal", on_created_empty = "[float; size 50% 50%; center] kitty --title terminal" })
 
-hl.workspace_rule({ workspace = "special:config", on_created_empty = "kitty --class scratch_config --title config -e helix " .. os.getenv("HOME") .. "/.config/hypr" })
-hl.window_rule({ match = { class = "scratch_config" }, float = true })
-hl.window_rule({ match = { class = "scratch_config" }, size = "70% 80%" })
-hl.window_rule({ match = { class = "scratch_config" }, center = true })
+hl.workspace_rule({ workspace = "special:config", on_created_empty = "[float; size 50% 50%; center] kitty --title config -e helix " .. os.getenv("HOME") .. "/.config/hypr" })
 
-hl.workspace_rule({ workspace = "special:yazi", on_created_empty = "kitty --class scratch_yazi --title yazi -e yazi" })
-hl.window_rule({ match = { class = "scratch_yazi" }, float = true })
-hl.window_rule({ match = { class = "scratch_yazi" }, size = "70% 80%" })
-hl.window_rule({ match = { class = "scratch_yazi" }, center = true })
+hl.workspace_rule({ workspace = "special:yazi", on_created_empty = "[float; size 50% 50%; center] kitty --title yazi -e yazi" })
 
-hl.workspace_rule({ workspace = "special:scrcpy", on_created_empty = "scrcpy" })
-hl.window_rule({ match = { class = "scrcpy", workspace = "special:scrcpy" }, float = true })
-hl.window_rule({ match = { class = "scrcpy", workspace = "special:scrcpy" }, center = true })
+hl.workspace_rule({ workspace = "special:scrcpy", on_created_empty = "[float; center] scrcpy" })

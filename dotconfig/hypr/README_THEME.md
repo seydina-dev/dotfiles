@@ -23,5 +23,5 @@ To add a new application to the toggle:
 3. Add a reload command if the application doesn't pick up changes automatically.
 
 ## ⌨️ Help System
-Press `SUPER + H` to generate and view a dynamic list of keybindings. This list is generated on-the-fly from `Keybinds.conf`.
-To improve descriptions, add a `# Comment` at the end of your bind lines in `Keybinds.conf`.
+Press `SUPER + H` to generate and view a dynamic list of keybindings. This list is generated on-the-fly from `keybinds.lua`.
+To improve descriptions, add a `-- Comment` at the end of your bind lines in `keybinds.lua`.
