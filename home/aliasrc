@@ -103,3 +103,6 @@ alias dlv="yt-dlp -P $HOME/media/Videos"
 alias sysinfo_memory="free -h"
 alias sysinfo_hard="lscpu"
 alias hst="history | cut -c 8- | sort | uniq | fzf --reverse | tr -d '\n' | _cin"
+
+# Local machine-specific overrides (untracked)
+[ -f "$HOME/.aliasrc.local" ] && . "$HOME/.aliasrc.local"

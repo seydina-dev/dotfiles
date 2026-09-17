@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/usr/bin/env bash
 
-[[ $(cat ~/.cache/wal/colors-wal-dwm.h |wc -l) == 18 ]] && (sed -i '17d' $HOME/.cache/wal/colors-wal-dwm.h)
+[[ $(cat ~/.cache/wal/colors-wal-dwm.h 2>/dev/null | wc -l) == 18 ]] && sed -i '17d' "$HOME/.cache/wal/colors-wal-dwm.h"
 

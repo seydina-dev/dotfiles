@@ -19,8 +19,10 @@ source "$LIB_DIR/validators.sh"
 DRY_RUN=false
 VERBOSE=false
 FORCE=false
+CUSTOM_MODULES_SPECIFIED=false
 declare -a EXECUTED_STEPS=()
 declare -A INSTALLED_PACKAGES=()
+declare -a AVAILABLE_MODULES=()
 
 # --- Usage Information ---
 usage() {
@@ -106,21 +108,18 @@ parse_arguments() {
     done
 
     # Module selection logic
-    local available_modules=()
+    AVAILABLE_MODULES=()
     for m_file in "$MODULES_DIR"/*.sh; do
-        available_modules+=("$(basename "$m_file" .sh)")
+        AVAILABLE_MODULES+=("$(basename "$m_file" .sh)")
     done
 
     if [[ -n "$modules" ]]; then
         IFS=',' read -ra SELECTED_MODULES <<< "$modules"
+        CUSTOM_MODULES_SPECIFIED=true
     else
         # Default modules to run (order matters)
         SELECTED_MODULES=("base" "dotfiles" "services" "scripts" "fonts")
-        # Add DWM or Hyprland if they are available and not on Termux
-        if [[ "$OS" != "termux" ]]; then
-            [[ " ${available_modules[*]} " =~ " dwm " ]] && SELECTED_MODULES+=("dwm")
-            [[ " ${available_modules[*]} " =~ " hyprland " ]] && SELECTED_MODULES+=("hyprland")
-        fi
+        CUSTOM_MODULES_SPECIFIED=false
     fi
 
 
@@ -187,12 +186,23 @@ main() {
     check_dependencies
     setup_directories
 
-    # Load and execute modules
+    # Load and execute core modules
     for module in "${SELECTED_MODULES[@]}"; do
         if [[ -n "$module" ]]; then
             execute_module "$module"
         fi
     done
+
+    # If running default install (no -m specified), offer window manager setup in last position
+    if [[ "$CUSTOM_MODULES_SPECIFIED" == false && "$OS" != "termux" ]]; then
+        log_section "Window Manager Setup (Optional)"
+        if [[ " ${AVAILABLE_MODULES[*]} " =~ " hyprland " ]] && confirm "Install Hyprland window manager and desktop components?"; then
+            execute_module "hyprland"
+        fi
+        if [[ " ${AVAILABLE_MODULES[*]} " =~ " dwm " ]] && confirm "Install DWM window manager (compiles from source)?"; then
+            execute_module "dwm"
+        fi
+    fi
 
     # Post-installation verification
     verify_installations

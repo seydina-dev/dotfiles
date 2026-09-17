@@ -30,11 +30,12 @@ else
 fi
 
 # 1. Update Symlinks (The core of the theme system)
-# We swap the active 'style.css' or 'config' with the mode-specific version
-ln -sf "${WOFI_DIR}/styles/style-${NEXT_MODE}.css" "${WOFI_DIR}/style.css"
-ln -sf "${WAYBAR_DIR}/styles/style-${NEXT_MODE}.css" "${WAYBAR_DIR}/style.css"
-ln -sf "${MAKO_DIR}/styles/config-${NEXT_MODE}" "${MAKO_DIR}/config"
-ln -sf "${KITTY_DIR}/themes/${NEXT_MODE}.conf" "${KITTY_DIR}/current-theme.conf"
+# We swap the active 'style.css' or 'config' with the mode-specific version using relative symlinks
+# so that host-specific absolute paths do not leak into dotfiles git tracking
+[ -d "$WOFI_DIR" ] && (cd "$WOFI_DIR" && ln -sf "styles/style-${NEXT_MODE}.css" "style.css")
+[ -d "$WAYBAR_DIR" ] && (cd "$WAYBAR_DIR" && ln -sf "styles/style-${NEXT_MODE}.css" "style.css")
+[ -d "$MAKO_DIR" ] && (cd "$MAKO_DIR" && ln -sf "styles/config-${NEXT_MODE}" "config")
+[ -d "$KITTY_DIR" ] && (cd "$KITTY_DIR" && ln -sf "themes/${NEXT_MODE}.conf" "current-theme.conf")
 
 # 2. GTK / Icons (Tells desktop apps like Thunar or Settings to change)
 gsettings set org.gnome.desktop.interface gtk-theme "$GTK_THEME"

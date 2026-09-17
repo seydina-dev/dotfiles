@@ -7,4 +7,4 @@ set background=dark
 set title
 set tabstop=4
 
-map <C s> :split
+map <C-s> :split

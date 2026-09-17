@@ -1,7 +1,3 @@
-if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
-  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
-fi
-
 # Path Variables
 # Path to your Oh My Zsh installation.
 export ZSH="$HOME/.oh-my-zsh"
@@ -16,13 +12,9 @@ export ZSH="$HOME/.oh-my-zsh"
 #plugins=( git zsh-syntax-highlighting zsh-autosuggestions fzf postgres tmux zsh-interactive-cd z)
 plugins=(git)
 
-# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
-[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
-
-#
-#source /usr/share/nvm/init-nvm.sh
+[[ -f "$ZSH/oh-my-zsh.sh" ]] && source "$ZSH/oh-my-zsh.sh"
 
 eval "$(starship init zsh)"
 
 # Added by dotfiles setup
-export PATH="/home/amiral/.local/bin:$PATH"
+export PATH="$HOME/.local/bin:$PATH"
